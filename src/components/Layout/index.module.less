@@ -1,0 +1,23 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%; // 确保布局占据整个宽度
+
+  .header {
+    color: #fff;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    height: 64px;
+    width: 100%; // 确保头部占据整个宽度
+  }
+
+  .content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    width: 100%; // 确保内容区域占据整个宽度
+    box-sizing: border-box; // 确保padding不会增加总宽度
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "name": "dicom-viewer",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
+  },
+  "dependencies": {
+    "@ant-design/icons": "^5.5.1",
+    "@cornerstonejs/core": "^1.86.0",
+    "@cornerstonejs/dicom-image-loader": "^1.86.0",
+    "@cornerstonejs/streaming-image-volume-loader": "^1.86.0",
+    "@cornerstonejs/tools": "^1.86.0",
+    "antd": "^5.21.5",
+    "axios": "^1.7.7",
+    "cornerstone-wado-image-loader": "^4.13.2",
+    "dcmjs": "^0.34.5",
+    "dicom-parser": "^1.8.21",
+    "less": "^4.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.27.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1",
+    "@typescript-eslint/eslint-plugin": "^8.11.0",
+    "@typescript-eslint/parser": "^8.11.0",
+    "@vitejs/plugin-react": "^4.3.3",
+    "eslint": "^9.13.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.13",
+    "globals": "^15.11.0",
+    "prettier": "^3.3.3",
+    "vite": "^5.4.9"
+  }
+}
