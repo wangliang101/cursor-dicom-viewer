@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Table, Input } from 'antd';
+import TAG_DICT from './dicomTag';
 
 const { Search } = Input;
 
@@ -11,16 +12,29 @@ function DicomTagsViewer({ tags }) {
       title: 'Tag',
       dataIndex: 'tag',
       key: 'tag',
+      width: 80,
     },
     {
       title: 'VR',
       dataIndex: 'vr',
       key: 'vr',
+      width: 40,
+    },
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      width: 160,
+      render: (text) => {
+        console.log(text);
+        return text || 'Unknown';
+      },
     },
     {
       title: 'Value',
       dataIndex: 'value',
       key: 'value',
+      width: 200,
       render: (text) => (
         <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{text}</div>
       ),
@@ -29,10 +43,15 @@ function DicomTagsViewer({ tags }) {
 
   const data = useMemo(() => {
     return Object.entries(tags).map(([tag, { vr, value }]) => {
+      console.log('123', tag, `(${tag.slice(0, 4)},${tag.slice(4)})`);
+      // 0000, 0002;
+      const formattedTag = `(${tag.slice(1, 5)},${tag.slice(5)})`;
+      console.log(TAG_DICT[formattedTag]);
       return {
         key: tag,
         tag: tag,
         vr: vr,
+        name: TAG_DICT[formattedTag]?.name || 'Unknown',
         value: value || 'N/A',
       };
     });
@@ -43,6 +62,7 @@ function DicomTagsViewer({ tags }) {
     return data.filter(
       (item) =>
         item.tag.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.name.toLowerCase().includes(searchText.toLowerCase()) ||
         (item.value && item.value.toLowerCase().includes(searchText.toLowerCase()))
     );
   }, [data, searchText]);
@@ -50,13 +70,18 @@ function DicomTagsViewer({ tags }) {
   if (!tags) {
     return <div>No DICOM tags available</div>;
   }
+
   const handleSearch = (value) => {
     setSearchText(value);
   };
 
   return (
     <div>
-      <Search placeholder="搜索 Tag 或值" onSearch={handleSearch} style={{ marginBottom: 16 }} />
+      <Search
+        placeholder="搜索 Tag、名称或值"
+        onSearch={handleSearch}
+        style={{ marginBottom: 16 }}
+      />
       <Table
         columns={columns}
         dataSource={filteredData}
