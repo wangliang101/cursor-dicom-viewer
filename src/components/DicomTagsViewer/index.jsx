@@ -43,8 +43,6 @@ function DicomTagsViewer({ tags }) {
 
   const data = useMemo(() => {
     return Object.entries(tags).map(([tag, { vr, value }]) => {
-      console.log('123', tag, `(${tag.slice(0, 4)},${tag.slice(4)})`);
-      // 0000, 0002;
       const formattedTag = `(${tag.slice(1, 5)},${tag.slice(5)})`;
       console.log(TAG_DICT[formattedTag]);
       return {
