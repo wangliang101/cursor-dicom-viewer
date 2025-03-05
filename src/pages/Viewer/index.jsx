@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef,message } from 'react';
-import { Button, List,Slider,Radio,Modal } from 'antd';
+import React, { useState, useEffect, useRef, message } from 'react';
+import { Button, List, Slider, Radio, Modal } from 'antd';
 import DicomTagsViewer from '../../components/DicomTagsViewer';
 import * as cornerstone from '@cornerstonejs/core';
 import * as cornerstoneTools from '@cornerstonejs/tools';
@@ -49,7 +49,10 @@ function Viewer() {
         },
       });
 
-      cornerstone.imageLoader.registerImageLoader('wadouri', cornerstoneWADOImageLoader.wadouri.loadImage);
+      cornerstone.imageLoader.registerImageLoader(
+        'wadouri',
+        cornerstoneWADOImageLoader.wadouri.loadImage
+      );
 
       const element = viewerRef.current;
       const renderingEngineId = 'myRenderingEngine';
@@ -94,7 +97,7 @@ function Viewer() {
     cornerstoneTools.init();
 
     const toolsToAdd = [WindowLevelTool, PanTool, ZoomTool, StackScrollMouseWheelTool];
-    toolsToAdd.forEach(tool => {
+    toolsToAdd.forEach((tool) => {
       try {
         cornerstoneTools.addTool(tool);
       } catch (error) {
@@ -109,7 +112,7 @@ function Viewer() {
       toolGroup = ToolGroupManager.createToolGroup(toolGroupId);
       toolGroupRef.current = toolGroup;
 
-      toolsToAdd.forEach(tool => {
+      toolsToAdd.forEach((tool) => {
         toolGroup.addTool(tool.toolName);
       });
 
@@ -196,7 +199,7 @@ function Viewer() {
     setActiveTool(newTool);
     if (toolGroupRef.current) {
       // 停用所有工具
-      [WindowLevelTool.toolName, PanTool.toolName, ZoomTool.toolName].forEach(toolName => {
+      [WindowLevelTool.toolName, PanTool.toolName, ZoomTool.toolName].forEach((toolName) => {
         toolGroupRef.current.setToolPassive(toolName);
       });
 
@@ -219,28 +222,30 @@ function Viewer() {
       message.warning('请先上传 DICOM 文件');
       return;
     }
-  
+
     try {
       const imageId = images[currentImageIndex];
       const image = await cornerstone.imageLoader.loadAndCacheImage(imageId);
-      
+
       // 获取原始的 DICOM 数据
-      const arrayBuffer = await fetch(imageId.replace('wadouri:', '')).then(res => res.arrayBuffer());
+      const arrayBuffer = await fetch(imageId.replace('wadouri:', '')).then((res) =>
+        res.arrayBuffer()
+      );
       const byteArray = new Uint8Array(arrayBuffer);
-      
+
       // 使用 dicom-parser 解析 DICOM 数据
       const dataSet = dicomParser.parseDicom(byteArray);
-      
+
       // 创建一个包含所有 tags 的对象
       const tags = {};
       for (let tag in dataSet.elements) {
         const element = dataSet.elements[tag];
         tags[tag] = {
           vr: element.vr,
-          value: dataSet.string(tag)
+          value: dataSet.string(tag),
         };
       }
-  
+
       setDicomTags(tags);
       setIsTagModalVisible(true);
     } catch (error) {
@@ -265,9 +270,7 @@ function Viewer() {
     <div className={styles.viewer}>
       <div className={styles.toolbar}>
         <Button onClick={showModal}>上传DICOM文件</Button>
-        <Button onClick={isPlaying ? stopClip : playClip}>
-          {isPlaying ? '停止' : '播放'}
-        </Button>
+        <Button onClick={isPlaying ? stopClip : playClip}>{isPlaying ? '停止' : '播放'}</Button>
         <Slider
           min={1}
           max={100}
@@ -282,7 +285,9 @@ function Viewer() {
           <Radio.Button value={PanTool.toolName}>平移</Radio.Button>
           <Radio.Button value={ZoomTool.toolName}>缩放</Radio.Button>
         </Radio.Group>
-        <Button onClick={showDicomTags} disabled={images.length === 0}>显示 Tags</Button>
+        <Button onClick={showDicomTags} disabled={images.length === 0}>
+          显示 Tags
+        </Button>
       </div>
       <div className={styles.content}>
         <div className={styles.imageList}>
@@ -314,7 +319,6 @@ function Viewer() {
       </Modal>
     </div>
   );
-
 }
 
 export default Viewer;
