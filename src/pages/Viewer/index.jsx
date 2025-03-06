@@ -1,24 +1,31 @@
-import React, { useState, useEffect, useRef, message } from 'react';
+import { useState, useEffect, useRef, message } from 'react';
 import { Button, List, Slider, Radio, Modal } from 'antd';
 import DicomTagsViewer from '../../components/DicomTagsViewer';
-import * as cornerstone from '@cornerstonejs/core';
-import * as cornerstoneTools from '@cornerstonejs/tools';
-import * as cornerstoneWADOImageLoader from '@cornerstonejs/dicom-image-loader';
+import { init as coreInit, RenderingEngine, Enums } from '@cornerstonejs/core';
+import { init as dicomImageLoaderInit } from '@cornerstonejs/dicom-image-loader';
 import dicomParser from 'dicom-parser';
 import UploadModal from '../../components/UploadModal';
 import { handleUpload } from '../../utils/uploadHandler';
 import styles from './index.module.less';
 
-const {
-  WindowLevelTool,
-  PanTool,
-  ZoomTool,
-  StackScrollMouseWheelTool,
+import {
+  init as cornerstoneToolsInit,
   ToolGroupManager,
-  Enums: csToolsEnums,
-} = cornerstoneTools;
+  WindowLevelTool,
+  ZoomTool,
+  PanTool,
+  StackScrollTool,
+  Enums as csToolsEnums,
+  addTool,
+} from '@cornerstonejs/tools';
 
-const { MouseBindings } = csToolsEnums;
+console.log('xxxxx', StackScrollTool.name);
+
+const { ViewportType } = Enums;
+
+// 定义常量
+const renderingEngineId = 'myRenderingEngine';
+const viewportId = 'CT_AXIAL_STACK';
 
 function Viewer() {
   const [isTagModalVisible, setIsTagModalVisible] = useState(false);
@@ -37,47 +44,55 @@ function Viewer() {
   const toolGroupRef = useRef(null);
 
   useEffect(() => {
-    async function initCornerstone() {
-      await cornerstone.init();
+    let isInitializing = false;
+    async function init() {
+      if (isInitializing) return;
+      isInitializing = true;
+      try {
+        console.log('开始初始化 Cornerstone');
+        // 检查是否已经初始化
+        if (isInitialized) {
+          console.log('Cornerstone 已经初始化，跳过');
+          return;
+        }
+        // 确保按正确顺序初始化
+        await coreInit();
+        await dicomImageLoaderInit();
+        await cornerstoneToolsInit();
 
-      cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
-      cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
-      cornerstoneWADOImageLoader.configure({
-        useWebWorkers: true,
-        decodeConfig: {
-          useWebWorkers: true,
-        },
-      });
+        const renderingEngine = new RenderingEngine(renderingEngineId);
+        renderingEngineRef.current = renderingEngine;
 
-      cornerstone.imageLoader.registerImageLoader(
-        'wadouri',
-        cornerstoneWADOImageLoader.wadouri.loadImage
-      );
+        const element = viewerRef.current;
 
-      const element = viewerRef.current;
-      const renderingEngineId = 'myRenderingEngine';
-      const renderingEngine = new cornerstone.RenderingEngine(renderingEngineId);
-      renderingEngineRef.current = renderingEngine;
+        if (!element) {
+          console.error('视图元素不存在');
+          throw new Error('视图元素不存在');
+        }
 
-      const viewportId = 'CT_STACK';
-      const viewportInput = {
-        viewportId,
-        element,
-        type: cornerstone.Enums.ViewportType.STACK,
-      };
+        const viewportInput = {
+          viewportId,
+          element,
+          type: ViewportType.STACK,
+        };
 
-      renderingEngine.enableElement(viewportInput);
+        renderingEngine.enableElement(viewportInput);
+        viewportRef.current = renderingEngine.getViewport(viewportId);
 
-      viewportRef.current = renderingEngine.getViewport(viewportId);
-      console.log('Viewport 已获取:', viewportRef.current);
+        // // 确保在此之后初始化工具
+        // initializeTools(viewportId);
 
-      initializeTools(element, viewportId, renderingEngineId);
-
-      setIsInitialized(true);
-      console.log('Cornerstone 初始化完成');
+        setIsInitialized(true);
+        console.log('Cornerstone 初始化完成');
+      } catch (error) {
+        console.error('Cornerstone 初始化失败:', error);
+        setIsInitialized(false);
+      } finally {
+        isInitializing = false;
+      }
     }
 
-    initCornerstone();
+    init();
 
     return () => {
       if (renderingEngineRef.current) {
@@ -89,54 +104,60 @@ function Viewer() {
 
   useEffect(() => {
     if (isInitialized && images.length > 0) {
-      loadAndViewImage(images[currentImageIndex]);
+      loadAndViewImage(images);
     }
-  }, [isInitialized, images, currentImageIndex]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isInitialized, images]);
 
-  const initializeTools = (element, viewportId, renderingEngineId) => {
-    cornerstoneTools.init();
-
-    const toolsToAdd = [WindowLevelTool, PanTool, ZoomTool, StackScrollMouseWheelTool];
-    toolsToAdd.forEach((tool) => {
-      try {
-        cornerstoneTools.addTool(tool);
-      } catch (error) {
-        console.warn(`Tool ${tool.toolName} already exists, skipping...`);
-      }
-    });
-
+  const initializeTools = (viewportId) => {
     const toolGroupId = 'myToolGroup';
-    let toolGroup = ToolGroupManager.getToolGroup(toolGroupId);
+    const toolGroup = ToolGroupManager.createToolGroup(toolGroupId);
+    if (toolGroup) {
+      toolGroupRef.current = toolGroup; // 保存toolGroup引用
+      addTool(ZoomTool);
+      addTool(PanTool);
+      addTool(WindowLevelTool);
+      addTool(StackScrollTool);
+      toolGroup.addTool(ZoomTool.toolName);
+      toolGroup.addTool(PanTool.toolName);
+      toolGroup.addTool(WindowLevelTool.toolName);
+      toolGroup.addTool(StackScrollTool.toolName);
 
-    if (!toolGroup) {
-      toolGroup = ToolGroupManager.createToolGroup(toolGroupId);
-      toolGroupRef.current = toolGroup;
-
-      toolsToAdd.forEach((tool) => {
-        toolGroup.addTool(tool.toolName);
-      });
+      toolGroup.addViewport(viewportId);
 
       toolGroup.setToolActive(WindowLevelTool.toolName, {
-        bindings: [{ mouseButton: MouseBindings.Primary }],
+        bindings: [
+          {
+            mouseButton: csToolsEnums.MouseBindings.Primary, // Left Click
+          },
+        ],
       });
-      toolGroup.setToolActive(PanTool.toolName, {
-        bindings: [{ mouseButton: MouseBindings.Auxiliary }],
-      });
-      toolGroup.setToolActive(ZoomTool.toolName, {
-        bindings: [{ mouseButton: MouseBindings.Secondary }],
-      });
-      toolGroup.setToolActive(StackScrollMouseWheelTool.toolName);
 
-      toolGroup.addViewport(viewportId, renderingEngineId);
+      toolGroup.setToolActive(PanTool.toolName, {
+        bindings: [{ mouseButton: csToolsEnums.MouseBindings.Auxiliary }],
+      });
+      toolGroup.setToolActive(StackScrollTool.toolName, {
+        bindings: [{ mouseButton: csToolsEnums.MouseBindings.Wheel }],
+      });
+      // toolGroup.setToolActive(StackScrollMouseWheelTool.toolName);
+
+      toolGroup.setToolActive(ZoomTool.toolName, {
+        bindings: [
+          {
+            mouseButton: csToolsEnums.MouseBindings.Secondary, // Right Click
+          },
+        ],
+      });
     }
   };
 
-  const loadAndViewImage = async (imageId) => {
-    if (imageId && viewportRef.current) {
+  const loadAndViewImage = async (imageIds) => {
+    if (imageIds && viewportRef.current) {
       try {
-        console.log('开始加载图像:', imageId);
-        await viewportRef.current.setStack([imageId]);
+        console.log('开始加载图像:', imageIds);
+        await viewportRef.current.setStack(imageIds);
         console.log('图像堆栈设置完成');
+        initializeTools(viewportId);
         viewportRef.current.render();
         console.log('图像渲染完成');
       } catch (error) {
@@ -164,6 +185,8 @@ function Viewer() {
   };
 
   const handleImageSelect = (index) => {
+    viewportRef.current.setImageIdIndex(index);
+
     setCurrentImageIndex(index);
   };
 
@@ -197,6 +220,7 @@ function Viewer() {
   const handleToolChange = (e) => {
     const newTool = e.target.value;
     setActiveTool(newTool);
+
     if (toolGroupRef.current) {
       // 停用所有工具
       [WindowLevelTool.toolName, PanTool.toolName, ZoomTool.toolName].forEach((toolName) => {
@@ -205,11 +229,12 @@ function Viewer() {
 
       // 激活选中的工具
       toolGroupRef.current.setToolActive(newTool, {
-        bindings: [{ mouseButton: MouseBindings.Primary }],
+        bindings: [{ mouseButton: csToolsEnums.MouseBindings.Primary }],
       });
 
+      window.tools = toolGroupRef.current;
       // 滚轮工具始终保持激活状态
-      toolGroupRef.current.setToolActive(StackScrollMouseWheelTool.toolName);
+      // toolGroupRef.current.setToolActive(StackScrollTool.toolName);
 
       console.log(`已切换到工具: ${newTool}`);
     } else {
@@ -225,7 +250,7 @@ function Viewer() {
 
     try {
       const imageId = images[currentImageIndex];
-      const image = await cornerstone.imageLoader.loadAndCacheImage(imageId);
+      // const image = await cornerstone.imageLoader.loadAndCacheImage(imageId);
 
       // 获取原始的 DICOM 数据
       const arrayBuffer = await fetch(imageId.replace('wadouri:', '')).then((res) =>
@@ -265,6 +290,13 @@ function Viewer() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (images.length > 0 && isPlaying) {
+      viewportRef.current.setImageIdIndex(currentImageIndex);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentImageIndex]);
 
   return (
     <div className={styles.viewer}>

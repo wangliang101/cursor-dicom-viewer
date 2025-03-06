@@ -3,7 +3,7 @@ import { message } from 'antd';
 export const handleUpload = async (fileList, setImages) => {
   if (fileList.length > 0) {
     try {
-      const imageIds = fileList.map(file => `wadouri:${URL.createObjectURL(file.originFileObj)}`);
+      const imageIds = fileList.map((file) => `wadouri:${URL.createObjectURL(file.originFileObj)}`);
       console.log('生成的 Image IDs:', imageIds);
       setImages(imageIds);
       console.log('Images 已设置');

@@ -26,7 +26,6 @@ function DicomTagsViewer({ tags }) {
       key: 'name',
       width: 160,
       render: (text) => {
-        console.log(text);
         return text || 'Unknown';
       },
     },
@@ -44,7 +43,6 @@ function DicomTagsViewer({ tags }) {
   const data = useMemo(() => {
     return Object.entries(tags).map(([tag, { vr, value }]) => {
       const formattedTag = `(${tag.slice(1, 5)},${tag.slice(5)})`;
-      console.log(TAG_DICT[formattedTag]);
       return {
         key: tag,
         tag: tag,
