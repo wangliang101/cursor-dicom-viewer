@@ -1,0 +1,198 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: #fafafa;
+  border-bottom: 1px solid #e8e8e8;
+  gap: 8px;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  .ant-divider-vertical {
+    height: 24px;
+    margin: 0 8px;
+    border-left: 1px solid #d9d9d9;
+  }
+
+  .ant-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: #e6f7ff;
+      border-color: #91d5ff;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    &.ant-btn-primary {
+      background: linear-gradient(135deg, #1890ff, #40a9ff);
+      border: none;
+      box-shadow: 0 2px 6px rgba(24, 144, 255, 0.3);
+
+      &:hover {
+        background: linear-gradient(135deg, #40a9ff, #69c0ff);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+      }
+    }
+  }
+
+  .ant-space {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.zoomDisplay {
+  font-size: 12px;
+  font-weight: 500;
+  color: #595959;
+  background: #f5f5f5;
+  padding: 4px 8px;
+  border-radius: 4px;
+  min-width: 50px;
+  text-align: center;
+  border: 1px solid #e8e8e8;
+}
+
+.frameInfo {
+  font-size: 12px;
+  font-weight: 500;
+  color: #595959;
+  background: #f5f5f5;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #e8e8e8;
+  white-space: nowrap;
+}
+
+.toolGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+
+  .groupLabel {
+    font-size: 11px;
+    color: #8c8c8c;
+    margin-right: 4px;
+    font-weight: 500;
+  }
+}
+
+// 响应式设计
+@media (max-width: 1200px) {
+  .toolbar {
+    padding: 6px 12px;
+    gap: 6px;
+
+    .ant-btn {
+      min-width: 28px;
+      height: 28px;
+    }
+
+    .ant-divider-vertical {
+      height: 20px;
+      margin: 0 6px;
+    }
+  }
+
+  .zoomDisplay,
+  .frameInfo {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+}
+
+@media (max-width: 768px) {
+  .toolbar {
+    padding: 4px 8px;
+    gap: 4px;
+
+    .ant-btn {
+      min-width: 24px;
+      height: 24px;
+    }
+
+    .ant-divider-vertical {
+      display: none;
+    }
+  }
+
+  .zoomDisplay,
+  .frameInfo {
+    font-size: 10px;
+    padding: 2px 4px;
+  }
+}
+
+// 特殊样式
+.windowControlPanel {
+  .ant-row {
+    margin-bottom: 16px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .ant-col {
+    display: flex;
+    flex-direction: column;
+
+    label {
+      font-size: 12px;
+      color: #595959;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+  }
+
+  .ant-slider {
+    margin-top: 8px;
+  }
+}
+
+// 工具提示样式优化
+:global(.ant-tooltip) {
+  .ant-tooltip-inner {
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 4px;
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  .ant-tooltip-arrow {
+    &::before {
+      background: rgba(0, 0, 0, 0.85);
+    }
+  }
+}
+
+// Popover样式优化
+:global(.ant-popover) {
+  .ant-popover-inner {
+    border-radius: 8px;
+    box-shadow:
+      0 6px 16px 0 rgba(0, 0, 0, 0.08),
+      0 3px 6px -4px rgba(0, 0, 0, 0.12),
+      0 9px 28px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .ant-popover-title {
+    font-weight: 600;
+    border-bottom: 1px solid #f0f0f0;
+  }
+}

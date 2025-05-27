@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  background: #f5f5f5;
 }
 
 .toolbar {
@@ -19,17 +20,134 @@
 }
 
 .imageList {
-  width: 200px;
-  overflow-y: auto;
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
   border-right: 1px solid #e8e8e8;
-  background-color: antiquewhite;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06);
+}
+
+.uploadSection {
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+
+  .ant-btn {
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+    }
+  }
+}
+
+.imageList .ant-list {
+  flex: 1;
+
+  .ant-list-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f0f0f0;
+
+    &:hover {
+      background: #f5f5f5;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}
+
+.selectedImage {
+  background: linear-gradient(135deg, #e6f7ff, #bae7ff) !important;
+  border-left: 3px solid #1890ff;
+  font-weight: 600;
+  color: #1890ff;
+}
+
+.playbackControls {
+  padding: 12px;
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.fpsControl {
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: #595959;
+    margin-bottom: 8px;
+  }
+
+  .ant-slider {
+    margin: 0;
+  }
 }
 
 .viewerContainer {
   flex: 1;
   min-height: 400px;
+  background: #000;
+  position: relative;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
 }
 
-.selectedImage {
-  background-color: #e6f7ff;
+// 响应式设计
+@media (max-width: 1200px) {
+  .imageList {
+    width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .content {
+    flex-direction: column;
+  }
+
+  .imageList {
+    width: 100%;
+    height: 200px;
+    order: 2;
+    border-right: none;
+    border-top: 1px solid #e8e8e8;
+
+    .ant-list {
+      max-height: 120px;
+      overflow-y: auto;
+    }
+  }
+
+  .viewerContainer {
+    order: 1;
+    min-height: 300px;
+  }
+}
+
+// 滚动条样式优化
+.imageList .ant-list {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+
+    &:hover {
+      background: #a8a8a8;
+    }
+  }
 }

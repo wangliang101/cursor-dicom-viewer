@@ -1,11 +1,19 @@
-import { useState, useEffect, useRef, message } from 'react';
-import { Button, List, Slider, Radio, Modal } from 'antd';
+import { useState, useEffect, useRef } from 'react';
+import { Button, List, Slider, Modal, message } from 'antd';
 import DicomTagsViewer from '../../components/DicomTagsViewer';
+import DicomToolbar from '../../components/toolbar/DicomToolbar';
 import { init as coreInit, RenderingEngine, Enums } from '@cornerstonejs/core';
 import { init as dicomImageLoaderInit } from '@cornerstonejs/dicom-image-loader';
 import dicomParser from 'dicom-parser';
 import UploadModal from '../../components/UploadModal';
 import { handleUpload } from '../../utils/uploadHandler';
+import {
+  resetImage,
+  flipHorizontal,
+  flipVertical,
+  rotateImage,
+  invertImage,
+} from '../../utils/imageTransforms';
 import styles from './index.module.less';
 
 import {
@@ -217,31 +225,6 @@ function Viewer() {
     }
   };
 
-  const handleToolChange = (e) => {
-    const newTool = e.target.value;
-    setActiveTool(newTool);
-
-    if (toolGroupRef.current) {
-      // 停用所有工具
-      [WindowLevelTool.toolName, PanTool.toolName, ZoomTool.toolName].forEach((toolName) => {
-        toolGroupRef.current.setToolPassive(toolName);
-      });
-
-      // 激活选中的工具
-      toolGroupRef.current.setToolActive(newTool, {
-        bindings: [{ mouseButton: csToolsEnums.MouseBindings.Primary }],
-      });
-
-      window.tools = toolGroupRef.current;
-      // 滚轮工具始终保持激活状态
-      // toolGroupRef.current.setToolActive(StackScrollTool.toolName);
-
-      console.log(`已切换到工具: ${newTool}`);
-    } else {
-      console.warn('工具组未初始化');
-    }
-  };
-
   const showDicomTags = async () => {
     if (images.length === 0 || currentImageIndex === -1) {
       message.warning('请先上传 DICOM 文件');
@@ -298,31 +281,91 @@ function Viewer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentImageIndex]);
 
+  // 工具栏事件处理函数
+  const handleReset = () => {
+    if (viewportRef.current) {
+      resetImage(viewportRef.current);
+    }
+  };
+
+  const handleFlipH = () => {
+    if (viewportRef.current) {
+      flipHorizontal(viewportRef.current);
+    }
+  };
+
+  const handleFlipV = () => {
+    if (viewportRef.current) {
+      flipVertical(viewportRef.current);
+    }
+  };
+
+  const handleRotate = (angle) => {
+    if (viewportRef.current) {
+      rotateImage(viewportRef.current, angle);
+    }
+  };
+
+  const handleInvert = () => {
+    if (viewportRef.current) {
+      invertImage(viewportRef.current);
+    }
+  };
+
+  const handleNextFrame = () => {
+    if (images.length > 0) {
+      const nextIndex = (currentImageIndex + 1) % images.length;
+      setCurrentImageIndex(nextIndex);
+      if (viewportRef.current) {
+        viewportRef.current.setImageIdIndex(nextIndex);
+      }
+    }
+  };
+
+  const handlePrevFrame = () => {
+    if (images.length > 0) {
+      const prevIndex = currentImageIndex === 0 ? images.length - 1 : currentImageIndex - 1;
+      setCurrentImageIndex(prevIndex);
+      if (viewportRef.current) {
+        viewportRef.current.setImageIdIndex(prevIndex);
+      }
+    }
+  };
+
+  const handleShowSettings = () => {
+    message.info('设置功能将在后续版本中实现');
+  };
+
   return (
     <div className={styles.viewer}>
-      <div className={styles.toolbar}>
-        <Button onClick={showModal}>上传DICOM文件</Button>
-        <Button onClick={isPlaying ? stopClip : playClip}>{isPlaying ? '停止' : '播放'}</Button>
-        <Slider
-          min={1}
-          max={100}
-          value={framesPerSecond}
-          onChange={handleFpsChange}
-          style={{ width: 200 }}
-          disabled={isPlaying}
-        />
-        <span>帧率: {framesPerSecond} fps</span>
-        <Radio.Group onChange={handleToolChange} value={activeTool}>
-          <Radio.Button value={WindowLevelTool.toolName}>窗宽窗位</Radio.Button>
-          <Radio.Button value={PanTool.toolName}>平移</Radio.Button>
-          <Radio.Button value={ZoomTool.toolName}>缩放</Radio.Button>
-        </Radio.Group>
-        <Button onClick={showDicomTags} disabled={images.length === 0}>
-          显示 Tags
-        </Button>
-      </div>
+      <DicomToolbar
+        toolGroupRef={toolGroupRef}
+        activeTool={activeTool}
+        onToolChange={setActiveTool}
+        viewportRef={viewportRef}
+        onReset={handleReset}
+        onFlipH={handleFlipH}
+        onFlipV={handleFlipV}
+        onRotate={handleRotate}
+        onInvert={handleInvert}
+        onPlay={playClip}
+        onStop={stopClip}
+        onNextFrame={handleNextFrame}
+        onPrevFrame={handlePrevFrame}
+        isPlaying={isPlaying}
+        currentImageIndex={currentImageIndex}
+        totalImages={images.length}
+        onShowInfo={showDicomTags}
+        onShowSettings={handleShowSettings}
+      />
+
       <div className={styles.content}>
         <div className={styles.imageList}>
+          <div className={styles.uploadSection}>
+            <Button onClick={showModal} block>
+              上传DICOM文件
+            </Button>
+          </div>
           <List
             size="small"
             bordered
@@ -336,6 +379,20 @@ function Viewer() {
               </List.Item>
             )}
           />
+          {images.length > 1 && (
+            <div className={styles.playbackControls}>
+              <div className={styles.fpsControl}>
+                <label>帧率: {framesPerSecond} fps</label>
+                <Slider
+                  min={1}
+                  max={100}
+                  value={framesPerSecond}
+                  onChange={handleFpsChange}
+                  disabled={isPlaying}
+                />
+              </div>
+            </div>
+          )}
         </div>
         <div ref={viewerRef} className={styles.viewerContainer} />
       </div>
