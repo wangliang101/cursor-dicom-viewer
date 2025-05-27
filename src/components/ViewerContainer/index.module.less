@@ -1,0 +1,242 @@
+.viewerWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  background: #f8fafb;
+  min-width: 0;
+  transition: padding 0.3s ease;
+}
+
+.viewerCard {
+  flex: 1;
+  border: 1px solid #e8ecf0;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  :global(.ant-card-body) {
+    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+}
+
+.viewerContainer {
+  flex: 1;
+  min-height: 500px;
+  background: #000000;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px 12px 0 0;
+  overflow: hidden;
+  min-width: 0;
+
+  contain: layout;
+}
+
+// 占位符样式
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f8fafb 0%, #f1f4f6 100%);
+  color: #6b7c93;
+}
+
+.placeholderContent {
+  text-align: center;
+  max-width: 400px;
+  padding: 40px 20px;
+  transform: scale(1);
+  transition: transform 0.3s ease;
+}
+
+.placeholderIcon {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.placeholderTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 12px 0;
+  letter-spacing: 0.5px;
+}
+
+.placeholderDescription {
+  font-size: 14px;
+  color: #6b7c93;
+  margin: 0 0 32px 0;
+  line-height: 1.5;
+}
+
+.placeholderFeatures {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #6b7c93;
+  text-align: left;
+  justify-content: center;
+}
+
+.featureDot {
+  width: 6px;
+  height: 6px;
+  background: #2e7d8a;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+// 图像信息栏样式
+.imageInfo {
+  background: #f8fafb;
+  border-top: 1px solid #e8ecf0;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  flex-shrink: 0;
+}
+
+.imageStatus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  background: #52c41a;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// 响应式设计
+@media (max-width: 1200px) {
+  .viewerWrapper {
+    padding: 12px;
+  }
+
+  .viewerContainer {
+    min-height: 400px;
+  }
+
+  .placeholderTitle {
+    font-size: 18px;
+  }
+
+  .placeholderDescription {
+    font-size: 13px;
+  }
+
+  .placeholderContent {
+    transform: scale(0.95);
+  }
+}
+
+@media (max-width: 768px) {
+  .viewerWrapper {
+    padding: 8px;
+  }
+
+  .viewerContainer {
+    min-height: 300px;
+  }
+
+  .placeholderContent {
+    padding: 20px 16px;
+    transform: scale(0.9);
+  }
+
+  .placeholderTitle {
+    font-size: 16px;
+  }
+
+  .placeholderDescription {
+    font-size: 12px;
+  }
+
+  .placeholderFeatures {
+    gap: 8px;
+  }
+
+  .feature {
+    font-size: 12px;
+  }
+
+  .imageInfo {
+    padding: 8px 16px;
+  }
+
+  .imageStatus {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .placeholderContent {
+    max-width: 300px;
+    transform: scale(0.85);
+  }
+
+  .placeholderFeatures {
+    display: none;
+  }
+}
+
+// 确保DICOM图像正确显示
+.viewerContainer {
+  // cornerstone.js 需要的样式
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    transition: all 0.3s ease;
+  }
+
+  // 确保图像居中显示
+  > div {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+  }
+}

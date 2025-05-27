@@ -50,7 +50,7 @@ import {
   Enums as csToolsEnums,
   addTool,
 } from '@cornerstonejs/tools';
-import styles from './DicomToolbar.module.less';
+import styles from './index.module.less';
 
 const { Option } = Select;
 

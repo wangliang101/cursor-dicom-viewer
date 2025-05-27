@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Button, List, Slider, Modal, message } from 'antd';
+import { Modal, message } from 'antd';
 import DicomTagsViewer from '../../components/DicomTagsViewer';
-import DicomToolbar from '../../components/toolbar/DicomToolbar';
+import MainLayout from '../../components/MainLayout';
 import { init as coreInit, RenderingEngine, Enums } from '@cornerstonejs/core';
 import { init as dicomImageLoaderInit } from '@cornerstonejs/dicom-image-loader';
 import dicomParser from 'dicom-parser';
@@ -14,7 +14,6 @@ import {
   rotateImage,
   invertImage,
 } from '../../utils/imageTransforms';
-import styles from './index.module.less';
 
 import {
   init as cornerstoneToolsInit,
@@ -27,15 +26,13 @@ import {
   addTool,
 } from '@cornerstonejs/tools';
 
-console.log('xxxxx', StackScrollTool.name);
-
 const { ViewportType } = Enums;
 
 // 定义常量
 const renderingEngineId = 'myRenderingEngine';
 const viewportId = 'CT_AXIAL_STACK';
 
-function Viewer() {
+function Layout() {
   const [isTagModalVisible, setIsTagModalVisible] = useState(false);
   const [dicomTags, setDicomTags] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -58,12 +55,10 @@ function Viewer() {
       isInitializing = true;
       try {
         console.log('开始初始化 Cornerstone');
-        // 检查是否已经初始化
         if (isInitialized) {
           console.log('Cornerstone 已经初始化，跳过');
           return;
         }
-        // 确保按正确顺序初始化
         await coreInit();
         await dicomImageLoaderInit();
         await cornerstoneToolsInit();
@@ -86,9 +81,6 @@ function Viewer() {
 
         renderingEngine.enableElement(viewportInput);
         viewportRef.current = renderingEngine.getViewport(viewportId);
-
-        // // 确保在此之后初始化工具
-        // initializeTools(viewportId);
 
         setIsInitialized(true);
         console.log('Cornerstone 初始化完成');
@@ -114,14 +106,13 @@ function Viewer() {
     if (isInitialized && images.length > 0) {
       loadAndViewImage(images);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInitialized, images]);
 
   const initializeTools = (viewportId) => {
     const toolGroupId = 'myToolGroup';
     const toolGroup = ToolGroupManager.createToolGroup(toolGroupId);
     if (toolGroup) {
-      toolGroupRef.current = toolGroup; // 保存toolGroup引用
+      toolGroupRef.current = toolGroup;
       addTool(ZoomTool);
       addTool(PanTool);
       addTool(WindowLevelTool);
@@ -136,7 +127,7 @@ function Viewer() {
       toolGroup.setToolActive(WindowLevelTool.toolName, {
         bindings: [
           {
-            mouseButton: csToolsEnums.MouseBindings.Primary, // Left Click
+            mouseButton: csToolsEnums.MouseBindings.Primary,
           },
         ],
       });
@@ -147,12 +138,11 @@ function Viewer() {
       toolGroup.setToolActive(StackScrollTool.toolName, {
         bindings: [{ mouseButton: csToolsEnums.MouseBindings.Wheel }],
       });
-      // toolGroup.setToolActive(StackScrollMouseWheelTool.toolName);
 
       toolGroup.setToolActive(ZoomTool.toolName, {
         bindings: [
           {
-            mouseButton: csToolsEnums.MouseBindings.Secondary, // Right Click
+            mouseButton: csToolsEnums.MouseBindings.Secondary,
           },
         ],
       });
@@ -194,19 +184,16 @@ function Viewer() {
 
   const handleImageSelect = (index) => {
     viewportRef.current.setImageIdIndex(index);
-
     setCurrentImageIndex(index);
   };
 
-  const nextImage = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-  };
-
   const playClip = () => {
-    if (images.length > 1) {
-      setIsPlaying(true);
-      timerRef.current = setInterval(nextImage, 1000 / framesPerSecond);
-    }
+    if (images.length <= 1) return;
+    setIsPlaying(true);
+    const interval = 1000 / framesPerSecond;
+    timerRef.current = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, interval);
   };
 
   const stopClip = () => {
@@ -233,18 +220,13 @@ function Viewer() {
 
     try {
       const imageId = images[currentImageIndex];
-      // const image = await cornerstone.imageLoader.loadAndCacheImage(imageId);
-
-      // 获取原始的 DICOM 数据
       const arrayBuffer = await fetch(imageId.replace('wadouri:', '')).then((res) =>
         res.arrayBuffer()
       );
       const byteArray = new Uint8Array(arrayBuffer);
 
-      // 使用 dicom-parser 解析 DICOM 数据
       const dataSet = dicomParser.parseDicom(byteArray);
 
-      // 创建一个包含所有 tags 的对象
       const tags = {};
       for (let tag in dataSet.elements) {
         const element = dataSet.elements[tag];
@@ -278,7 +260,6 @@ function Viewer() {
     if (images.length > 0 && isPlaying) {
       viewportRef.current.setImageIdIndex(currentImageIndex);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentImageIndex]);
 
   // 工具栏事件处理函数
@@ -337,12 +318,13 @@ function Viewer() {
   };
 
   return (
-    <div className={styles.viewer}>
-      <DicomToolbar
+    <>
+      <MainLayout
+        // Header props
         toolGroupRef={toolGroupRef}
         activeTool={activeTool}
         onToolChange={setActiveTool}
-        viewportRef={viewportRef}
+        viewportRef={viewerRef}
         onReset={handleReset}
         onFlipH={handleFlipH}
         onFlipV={handleFlipV}
@@ -357,45 +339,14 @@ function Viewer() {
         totalImages={images.length}
         onShowInfo={showDicomTags}
         onShowSettings={handleShowSettings}
+        // SeriesPanel props
+        images={images}
+        onImageSelect={handleImageSelect}
+        onUpload={showModal}
+        framesPerSecond={framesPerSecond}
+        onFpsChange={handleFpsChange}
       />
 
-      <div className={styles.content}>
-        <div className={styles.imageList}>
-          <div className={styles.uploadSection}>
-            <Button onClick={showModal} block>
-              上传DICOM文件
-            </Button>
-          </div>
-          <List
-            size="small"
-            bordered
-            dataSource={images}
-            renderItem={(item, index) => (
-              <List.Item
-                onClick={() => handleImageSelect(index)}
-                className={index === currentImageIndex ? styles.selectedImage : ''}
-              >
-                图像 {index + 1}
-              </List.Item>
-            )}
-          />
-          {images.length > 1 && (
-            <div className={styles.playbackControls}>
-              <div className={styles.fpsControl}>
-                <label>帧率: {framesPerSecond} fps</label>
-                <Slider
-                  min={1}
-                  max={100}
-                  value={framesPerSecond}
-                  onChange={handleFpsChange}
-                  disabled={isPlaying}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-        <div ref={viewerRef} className={styles.viewerContainer} />
-      </div>
       <UploadModal open={isModalVisible} onCancel={handleCancel} onUpload={onUpload} />
       <Modal
         title="DICOM Tags"
@@ -406,8 +357,8 @@ function Viewer() {
       >
         <DicomTagsViewer tags={dicomTags} />
       </Modal>
-    </div>
+    </>
   );
 }
 
-export default Viewer;
+export default Layout;

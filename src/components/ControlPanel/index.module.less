@@ -1,0 +1,271 @@
+.controlPanel {
+  background: #ffffff;
+  border-left: 1px solid #e8ecf0;
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  width: 280px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  flex-shrink: 0;
+
+  &.collapsed {
+    width: 48px;
+    min-width: 48px;
+
+    .content {
+      display: none;
+    }
+
+    .header {
+      justify-content: center;
+      padding: 16px 8px;
+    }
+
+    .headerContent {
+      display: none;
+    }
+
+    .toggleBtn {
+      transform: scale(1);
+      position: static;
+      margin: 0;
+    }
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: linear-gradient(135deg, #f8fafb 0%, #f1f4f6 100%);
+  border-bottom: 1px solid #e8ecf0;
+  min-height: 60px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  overflow: hidden;
+  min-width: 0;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
+
+  .title {
+    transition:
+      opacity 0.2s ease,
+      visibility 0.2s ease,
+      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+.icon {
+  color: #2e7d8a;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.title {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toggleBtn {
+  color: #6b7c93;
+  border: none;
+  box-shadow: none;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    color: #2e7d8a;
+    background: rgba(46, 125, 138, 0.1);
+  }
+
+  .controlPanel.collapsed & {
+    color: #2e7d8a;
+    background: rgba(46, 125, 138, 0.1);
+
+    &:hover {
+      background: rgba(46, 125, 138, 0.2);
+      transform: scale(1.1);
+    }
+  }
+}
+
+.content {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// 功能卡片样式
+.functionCard {
+  border: 1px solid #e8ecf0;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.comingSoon {
+  text-align: center;
+  padding: 20px 10px;
+}
+
+.emptyDescription {
+  .emptyTitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 8px 0 4px 0;
+  }
+
+  .emptySubtitle {
+    font-size: 12px;
+    color: #6b7c93;
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+// 设置卡片样式
+.settingsCard {
+  border: 1px solid #e8ecf0;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+
+  :global(.ant-card-head) {
+    border-bottom: 1px solid #f1f4f6;
+    padding: 0 16px;
+    min-height: 48px;
+  }
+
+  :global(.ant-card-head-title) {
+    padding: 12px 0;
+  }
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #2c3e50;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cardIcon {
+  color: #2e7d8a;
+  font-size: 14px;
+}
+
+.settingItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f8fafb;
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  &:first-child {
+    padding-top: 0;
+  }
+}
+
+.settingLabel {
+  font-size: 13px;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+// 按钮重写样式
+.settingItem {
+  :global(.ant-btn) {
+    font-size: 12px;
+    color: #6b7c93;
+    padding: 4px 8px;
+    height: auto;
+
+    &:hover {
+      color: #2e7d8a;
+      background: rgba(46, 125, 138, 0.1);
+    }
+
+    &[disabled] {
+      color: #d0d7de;
+      background: transparent;
+
+      &:hover {
+        color: #d0d7de;
+        background: transparent;
+      }
+    }
+  }
+}
+
+// 滚动条样式
+.content {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f4f6;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #d0d7de;
+    border-radius: 3px;
+
+    &:hover {
+      background: #bcc5ce;
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .controlPanel {
+    width: 100%;
+    max-width: 100%;
+    border-left: none;
+    border-top: 1px solid #e8ecf0;
+
+    &.collapsed {
+      width: 100%;
+      height: 48px;
+    }
+  }
+
+  .header {
+    padding: 12px 16px;
+  }
+
+  .content {
+    padding: 12px 16px;
+  }
+}

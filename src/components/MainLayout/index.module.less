@@ -1,0 +1,112 @@
+.mainLayout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f0f2f5;
+  overflow: hidden;
+}
+
+.contentArea {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  background: #f8fafb;
+  position: relative;
+}
+
+// 确保各个面板的过渡效果流畅
+.contentArea > * {
+  transition:
+    width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s ease,
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: width;
+}
+
+// 确保中央查看器能够正确填充可用空间
+.contentArea > :nth-child(2) {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+// 响应式设计
+@media (max-width: 1024px) {
+  .contentArea {
+    // 在中等屏幕上保持水平布局但调整尺寸
+    gap: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mainLayout {
+    height: 100vh;
+    height: 100dvh; // 支持动态视口高度
+  }
+
+  .contentArea {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  // 移动端布局调整
+  .contentArea > :first-child {
+    order: 1; // 序列区
+    flex-shrink: 0;
+  }
+
+  .contentArea > :nth-child(2) {
+    order: 2; // 查看器
+    flex: 1;
+    min-height: 0;
+  }
+
+  .contentArea > :last-child {
+    order: 3; // 操控区
+    flex-shrink: 0;
+  }
+}
+
+// 深色模式支持（预留）
+@media (prefers-color-scheme: dark) {
+  .mainLayout {
+    background: #1a1a1a;
+  }
+
+  .contentArea {
+    background: #262626;
+  }
+}
+
+// 高分辨率屏幕优化
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .mainLayout {
+    // 确保在高DPI屏幕上的清晰度
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+// 打印样式
+@media print {
+  .mainLayout {
+    height: auto;
+    background: white;
+  }
+
+  .contentArea {
+    flex-direction: column;
+    background: white;
+  }
+
+  // 打印时隐藏侧边栏
+  .contentArea > :first-child,
+  .contentArea > :last-child {
+    display: none;
+  }
+
+  .contentArea > :nth-child(2) {
+    width: 100%;
+    height: auto;
+  }
+}
