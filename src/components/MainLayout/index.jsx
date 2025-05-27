@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../Header';
 import SeriesPanel from '../SeriesPanel';
 import ViewerContainer from '../ViewerContainer';
@@ -35,6 +35,37 @@ const MainLayout = ({
 }) => {
   const [isSeriesPanelCollapsed, setIsSeriesPanelCollapsed] = useState(false);
   const [isControlPanelCollapsed, setIsControlPanelCollapsed] = useState(true); // 默认隐藏
+
+  // 响应式状态管理
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobileScreen = window.innerWidth <= 768;
+      
+      // 在移动端，默认折叠两个面板以节省空间
+      if (isMobileScreen) {
+        // 如果之前没有图片，在小屏幕上默认折叠序列区
+        if (!images || images.length === 0) {
+          setIsSeriesPanelCollapsed(true);
+        }
+        // 控制区在小屏幕上默认保持折叠
+        setIsControlPanelCollapsed(true);
+      } else {
+        // 桌面端恢复正常状态
+        setIsSeriesPanelCollapsed(false);
+        setIsControlPanelCollapsed(true);
+      }
+    };
+
+    // 初始化检查
+    handleResize();
+    
+    // 添加窗口尺寸变化监听
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [images]);
 
   const handleSeriesPanelToggle = () => {
     setIsSeriesPanelCollapsed(!isSeriesPanelCollapsed);

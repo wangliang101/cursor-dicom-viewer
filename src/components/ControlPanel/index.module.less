@@ -275,18 +275,157 @@
     max-width: 100%;
     border-left: none;
     border-top: 1px solid #e8ecf0;
+    box-shadow: 0 -2px 8px rgba(42, 112, 121, 0.06);
+    max-height: 25vh; // 限制最大高度
+    overflow: hidden; // 确保不溢出
 
     &.collapsed {
       width: 100%;
       height: 48px;
+      max-height: 48px; // 折叠时的固定高度
     }
   }
 
   .header {
-    padding: 12px 16px;
+    padding: 8px 16px; // 减少垂直内边距
+    min-height: 48px; // 减少最小高度
   }
 
   .content {
-    padding: 12px 16px;
+    padding: 8px 16px 12px; // 减少内边距
+    gap: 12px; // 减少间距
+    overflow-y: auto; // 确保内容可滚动
+    max-height: calc(25vh - 48px); // 为header留出空间
+  }
+
+  // 优化功能卡片在小屏幕的显示
+  .functionCard,
+  .settingsCard {
+    border-radius: 8px; // 减小圆角
+    
+    :global(.ant-card-head) {
+      min-height: 40px; // 减少头部高度
+      padding: 0 12px;
+    }
+    
+    :global(.ant-card-head-title) {
+      padding: 8px 0; // 减少内边距
+    }
+    
+    :global(.ant-card-body) {
+      padding: 12px; // 减少body内边距
+    }
+  }
+
+  .cardTitle {
+    font-size: 12px; // 减小字体
+    gap: 6px;
+  }
+
+  .cardIcon {
+    font-size: 12px; // 减小图标尺寸
+  }
+
+  // 优化设置项在小屏幕的显示
+  .settingItem {
+    padding: 8px 0; // 减少内边距
+    
+    &:first-child {
+      padding-top: 0;
+    }
+    
+    &:last-child {
+      padding-bottom: 0;
+    }
+  }
+
+  .settingLabel {
+    font-size: 12px; // 减小字体
+  }
+
+  // 优化按钮样式
+  .settingItem {
+    :global(.ant-btn) {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+  }
+
+  // 优化即将推出的内容
+  .comingSoon {
+    padding: 12px 8px; // 减少内边距
+  }
+
+  .emptyDescription {
+    .emptyTitle {
+      font-size: 12px;
+      margin: 4px 0 2px 0;
+    }
+
+    .emptySubtitle {
+      font-size: 11px;
+      line-height: 1.3;
+    }
+  }
+}
+
+// 添加超小屏幕的额外优化
+@media (max-width: 480px) {
+  .controlPanel {
+    max-height: 20vh; // 在更小屏幕上进一步限制高度
+    
+    &.collapsed {
+      height: 40px;
+      max-height: 40px;
+    }
+  }
+
+  .header {
+    padding: 6px 12px;
+    min-height: 40px;
+  }
+
+  .content {
+    padding: 6px 12px 8px;
+    gap: 8px;
+    max-height: calc(20vh - 40px);
+  }
+
+  .functionCard,
+  .settingsCard {
+    :global(.ant-card-head) {
+      min-height: 36px;
+      padding: 0 8px;
+    }
+    
+    :global(.ant-card-head-title) {
+      padding: 6px 0;
+    }
+    
+    :global(.ant-card-body) {
+      padding: 8px;
+    }
+  }
+
+  .cardTitle {
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .cardIcon {
+    font-size: 11px;
+  }
+
+  .settingItem {
+    padding: 6px 0;
+  }
+
+  .settingLabel {
+    font-size: 11px;
+  }
+
+  .comingSoon {
+    padding: 8px 6px;
   }
 }

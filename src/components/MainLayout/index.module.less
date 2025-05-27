@@ -61,28 +61,55 @@
   .mainLayout {
     height: 100vh;
     height: 100dvh; // 支持动态视口高度
+    position: relative; // 确保正确的定位上下文
   }
 
   .contentArea {
     flex-direction: column;
     gap: 0;
+    overflow: hidden; // 防止内容溢出
+    touch-action: pan-y; // 优化触摸滚动
+    -webkit-overflow-scrolling: touch; // iOS平滑滚动
   }
 
   // 移动端布局调整
   .contentArea > :first-child {
     order: 1; // 序列区
     flex-shrink: 0;
+    max-height: 35vh; // 限制序列区最大高度为35%视口高度
+    min-height: 200px; // 确保最小可用高度
+    overflow: hidden; // 确保内容不溢出
   }
 
   .contentArea > :nth-child(2) {
     order: 2; // 查看器
     flex: 1;
     min-height: 0;
+    overflow: hidden; // 确保查看器不会溢出
+    position: relative; // 确保正确的层级
   }
 
   .contentArea > :last-child {
     order: 3; // 操控区
     flex-shrink: 0;
+    max-height: 25vh; // 限制控制区最大高度为25%视口高度
+    min-height: 150px; // 确保最小可用高度
+    overflow: hidden; // 确保内容不溢出
+  }
+}
+
+// 添加中等屏幕尺寸的过渡优化
+@media (max-width: 1024px) and (min-width: 769px) {
+  .contentArea {
+    gap: 6px; // 在中等屏幕上稍微减少间距
+  }
+  
+  .contentArea > :first-child {
+    width: 280px; // 稍微减少序列区宽度
+  }
+  
+  .contentArea > :last-child {
+    width: 250px; // 稍微减少控制区宽度
   }
 }
 

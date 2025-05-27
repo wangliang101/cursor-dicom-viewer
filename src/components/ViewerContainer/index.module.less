@@ -173,50 +173,127 @@
 @media (max-width: 768px) {
   .viewerWrapper {
     padding: 8px;
+    flex: 1;
+    min-height: 0;
   }
 
   .viewerContainer {
-    min-height: 300px;
+    min-height: 250px;
+    max-height: 40vh;
+  }
+
+  .viewerCard {
+    flex: 1;
+    min-height: 0;
+    border-radius: 8px;
   }
 
   .placeholderContent {
-    padding: 20px 16px;
-    transform: scale(0.9);
+    padding: 16px 12px;
+    transform: scale(0.85);
   }
 
   .placeholderTitle {
-    font-size: 16px;
+    font-size: 15px;
+    margin-bottom: 8px;
   }
 
   .placeholderDescription {
-    font-size: 12px;
+    font-size: 11px;
+    margin-bottom: 16px;
   }
 
   .placeholderFeatures {
-    gap: 8px;
+    gap: 6px;
   }
 
   .feature {
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .imageInfo {
-    padding: 8px 16px;
+    padding: 6px 12px;
+    min-height: 36px;
   }
 
   .imageStatus {
-    font-size: 12px;
+    font-size: 11px;
   }
 }
 
 @media (max-width: 600px) {
+  .viewerWrapper {
+    padding: 6px;
+  }
+
+  .viewerContainer {
+    min-height: 200px;
+    max-height: 35vh;
+  }
+
   .placeholderContent {
-    max-width: 300px;
-    transform: scale(0.85);
+    max-width: 280px;
+    transform: scale(0.8);
+    padding: 12px 8px;
+  }
+
+  .placeholderTitle {
+    font-size: 14px;
+  }
+
+  .placeholderDescription {
+    font-size: 10px;
+    margin-bottom: 12px;
   }
 
   .placeholderFeatures {
     display: none;
+  }
+
+  .imageInfo {
+    padding: 4px 8px;
+    min-height: 32px;
+  }
+
+  .imageStatus {
+    font-size: 10px;
+    gap: 4px;
+  }
+
+  .statusDot {
+    width: 6px;
+    height: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .viewerWrapper {
+    padding: 4px;
+  }
+
+  .viewerContainer {
+    min-height: 180px;
+    max-height: 30vh;
+    border-radius: 6px;
+  }
+
+  .viewerCard {
+    border-radius: 6px;
+  }
+
+  .placeholderContent {
+    padding: 8px 6px;
+    transform: scale(0.75);
+  }
+
+  .placeholderTitle {
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+
+  .placeholderDescription {
+    font-size: 9px;
+    margin-bottom: 8px;
   }
 }
 
