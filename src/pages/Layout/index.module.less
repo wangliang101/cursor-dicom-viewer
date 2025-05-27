@@ -10,7 +10,32 @@
   align-items: center;
   padding: 10px;
   gap: 10px;
-  flex-wrap: wrap; // 允许工具栏项目换行
+  flex-wrap: nowrap; // 改为不换行，使用水平滚动
+  overflow-x: auto; // 添加水平滚动
+  white-space: nowrap; // 防止内容换行
+
+  // 自定义滚动条样式
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  // Firefox 滚动条样式
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.05);
 }
 
 .content {

@@ -60,6 +60,8 @@
   display: flex;
   justify-content: center;
   margin-left: 40px;
+  min-width: 0;
+  overflow: hidden;
 
   // 重写工具栏在Header中的样式 - 使用精确的类名选择器和更高特异性
   div:global(.header-toolbar) {
@@ -69,7 +71,28 @@
     backdrop-filter: none;
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: none !important;
-    border-bottom: none !important;
+    // border-bottom: none !important;
+    max-width: 100%;
+    overflow-x: auto;
+
+    // 自定义工具栏在Header中的滚动条样式
+    &::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 2px;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
+    }
 
     :global(.ant-btn) {
       border: none !important;
@@ -142,9 +165,9 @@
 
     :global(.toolbar) {
       width: 100%;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 8px;
+      justify-content: flex-start;
+      flex-wrap: nowrap;
+      gap: 6px;
     }
   }
 

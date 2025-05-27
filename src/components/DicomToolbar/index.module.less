@@ -5,16 +5,42 @@
   background: #fafafa;
   border-bottom: 1px solid #e8e8e8;
   gap: 8px;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  flex-wrap: nowrap;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 0;
   z-index: 100;
+  white-space: nowrap;
+  min-width: 0;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.05);
 
   .ant-divider-vertical {
     height: 24px;
     margin: 0 8px;
     border-left: 1px solid #d9d9d9;
+    flex-shrink: 0;
   }
 
   .ant-btn {
@@ -26,6 +52,7 @@
     border-radius: 6px;
     transition: all 0.2s ease;
     border: 1px solid var(--border-color);
+    flex-shrink: 0;
 
     &:hover {
       background-color: var(--primary-alpha-10);
@@ -60,6 +87,8 @@
   .ant-space {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
+    white-space: nowrap;
   }
 }
 
@@ -75,6 +104,11 @@
   border: 1px solid #e8e8e8;
   font-family: 'Courier New', 'Monaco', monospace;
   letter-spacing: 0.5px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .frameInfo {
@@ -88,7 +122,11 @@
   white-space: nowrap;
   min-width: 80px;
   text-align: center;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
 .frameNumbers {
@@ -118,6 +156,7 @@
   .toolbar {
     padding: 6px 12px;
     gap: 6px;
+    // 保持水平滚动，不换行
 
     .ant-btn {
       min-width: 28px;
@@ -134,6 +173,7 @@
   .frameInfo {
     font-size: 11px;
     padding: 3px 6px;
+    min-width: 50px; // 减小最小宽度
   }
 }
 
@@ -141,6 +181,7 @@
   .toolbar {
     padding: 4px 8px;
     gap: 4px;
+    // 保持水平滚动
 
     .ant-btn {
       min-width: 24px;
@@ -148,7 +189,8 @@
     }
 
     .ant-divider-vertical {
-      display: none;
+      height: 16px; // 保留分割线，但减小高度
+      margin: 0 4px;
     }
   }
 
@@ -156,6 +198,7 @@
   .frameInfo {
     font-size: 10px;
     padding: 2px 4px;
+    min-width: 40px; // 进一步减小最小宽度
   }
 }
 
@@ -216,4 +259,9 @@
     font-weight: 600;
     border-bottom: 1px solid #f0f0f0;
   }
+}
+
+// 防止Popover被挤压
+.toolbar :global(.ant-popover) {
+  flex-shrink: 0;
 }

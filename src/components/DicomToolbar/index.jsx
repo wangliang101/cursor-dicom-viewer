@@ -451,18 +451,20 @@ const DicomToolbar = ({
       <Divider type="vertical" />
 
       {/* 窗宽窗位控制 */}
-      <Popover
-        content={windowControlContent}
-        title="窗宽窗位设置"
-        trigger="click"
-        open={showWindowControl}
-        onOpenChange={setShowWindowControl}
-        placement="bottom"
-      >
-        <Tooltip title="窗宽窗位设置">
-          <Button icon={<SettingOutlined />} />
-        </Tooltip>
-      </Popover>
+      <Space size="small">
+        <Popover
+          content={windowControlContent}
+          title="窗宽窗位设置"
+          trigger="click"
+          open={showWindowControl}
+          onOpenChange={setShowWindowControl}
+          placement="bottom"
+        >
+          <Tooltip title="窗宽窗位设置">
+            <Button icon={<SettingOutlined />} />
+          </Tooltip>
+        </Popover>
+      </Space>
 
       <Divider type="vertical" />
 
