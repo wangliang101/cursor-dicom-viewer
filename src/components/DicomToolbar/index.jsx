@@ -82,6 +82,8 @@ const DicomToolbar = ({
   currentImageIndex,
   totalImages,
   onShowSettings,
+  className,
+  style,
 }) => {
   const [windowWidth, setWindowWidth] = useState(400);
   const [windowCenter, setWindowCenter] = useState(40);
@@ -297,7 +299,7 @@ const DicomToolbar = ({
   );
 
   return (
-    <div className={styles.toolbar}>
+    <div className={`${styles.toolbar} ${className || ''}`} style={style}>
       {/* 基础工具组 */}
       <Space size="small">
         <Tooltip title="窗宽窗位">

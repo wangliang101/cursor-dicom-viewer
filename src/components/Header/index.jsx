@@ -43,6 +43,14 @@ const Header = ({
 
         <div className={styles.toolbarSection}>
           <DicomToolbar
+            className="header-toolbar"
+            style={{
+              background: 'transparent',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '12px',
+              boxShadow: 'none',
+              borderBottom: 'none',
+            }}
             toolGroupRef={toolGroupRef}
             activeTool={activeTool}
             onToolChange={onToolChange}

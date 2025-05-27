@@ -61,39 +61,55 @@
   justify-content: center;
   margin-left: 40px;
 
-  // 重写工具栏在Header中的样式
-  :global(.toolbar) {
-    background: rgba(255, 255, 255, 0.1);
+  // 重写工具栏在Header中的样式 - 使用精确的类名选择器和更高特异性
+  div:global(.header-toolbar) {
+    background: transparent !important;
     border-radius: 12px;
     padding: 8px 16px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: none;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: none !important;
+    border-bottom: none !important;
 
     :global(.ant-btn) {
-      border: none;
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
+      border: none !important;
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: rgba(255, 255, 255, 0.9) !important;
       transition: all 0.2s ease;
+      backdrop-filter: blur(4px);
 
       &:hover {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
+        background: rgba(255, 255, 255, 0.15) !important;
+        color: white !important;
         transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
       }
 
       &:global(.ant-btn-primary) {
-        background: rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.2) !important;
+        color: white !important;
+        font-weight: 500;
 
         &:hover {
-          background: rgba(255, 255, 255, 0.35);
+          background: rgba(255, 255, 255, 0.3) !important;
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+          box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15) !important;
         }
       }
     }
 
     :global(.ant-divider-vertical) {
-      border-color: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.2) !important;
+      opacity: 0.6;
+    }
+
+    // 优化工具栏内的显示元素
+    :global(span[class*='zoomDisplay']),
+    :global(span[class*='frameInfo']) {
+      background: rgba(255, 255, 255, 0.1) !important;
+      color: rgba(255, 255, 255, 0.95) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      backdrop-filter: blur(4px);
     }
   }
 }
