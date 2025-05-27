@@ -3,6 +3,37 @@
   line-height: 1.5;
   font-weight: 400;
 
+  /* 主色彩系统 - 优化后的青蓝色系 */
+  --primary-color: #3b82a2;
+  --primary-color-light: #4f94b8;
+  --primary-color-lighter: #65a6ce;
+  --primary-color-dark: #2d6b87;
+  --primary-color-darker: #1f546c;
+
+  /* 辅助色彩 */
+  --secondary-color: #6b7c93;
+  --accent-color: #52c41a;
+  --border-color: #e8ecf0;
+  --background-color: #f8fafb;
+  --surface-color: #ffffff;
+  --text-color: #2c3e50;
+  --text-color-secondary: #6b7c93;
+  --text-color-disabled: #d0d7de;
+
+  /* 透明度变化 */
+  --primary-alpha-05: rgba(59, 130, 162, 0.05);
+  --primary-alpha-08: rgba(59, 130, 162, 0.08);
+  --primary-alpha-10: rgba(59, 130, 162, 0.1);
+  --primary-alpha-15: rgba(59, 130, 162, 0.15);
+  --primary-alpha-20: rgba(59, 130, 162, 0.2);
+  --primary-alpha-25: rgba(59, 130, 162, 0.25);
+
+  /* 状态颜色 */
+  --success-color: #52c41a;
+  --warning-color: #faad14;
+  --error-color: #ff4d4f;
+  --info-color: var(--primary-color);
+
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
@@ -11,7 +42,6 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
 }
 
 #root {

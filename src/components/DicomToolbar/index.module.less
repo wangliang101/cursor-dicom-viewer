@@ -25,23 +25,34 @@
     height: 32px;
     border-radius: 6px;
     transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
 
     &:hover {
-      background-color: #e6f7ff;
-      border-color: #91d5ff;
+      background-color: var(--primary-alpha-10);
+      border-color: var(--primary-alpha-20);
       transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 4px var(--primary-alpha-15);
     }
 
     &.ant-btn-primary {
-      background: linear-gradient(135deg, #1890ff, #40a9ff);
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-color-light));
       border: none;
-      box-shadow: 0 2px 6px rgba(24, 144, 255, 0.3);
+      box-shadow: 0 2px 6px var(--primary-alpha-25);
+      color: white;
 
       &:hover {
-        background: linear-gradient(135deg, #40a9ff, #69c0ff);
+        background: linear-gradient(
+          135deg,
+          var(--primary-color-light),
+          var(--primary-color-lighter)
+        );
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+        box-shadow: 0 4px 12px var(--primary-alpha-25);
+      }
+
+      &:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 6px var(--primary-alpha-20);
       }
     }
   }

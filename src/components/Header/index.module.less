@@ -1,7 +1,7 @@
 .header {
-  background: linear-gradient(135deg, #2e7d8a 0%, #3d8b96 100%);
-  border-bottom: 2px solid #1f5c66;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-light) 100%);
+  border-bottom: 2px solid var(--primary-color-dark);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   position: relative;
 
   &::after {
@@ -11,7 +11,7 @@
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
   }
 }
 
@@ -82,10 +82,12 @@
       }
 
       &:global(.ant-btn-primary) {
-        background: rgba(24, 144, 255, 0.8);
+        background: rgba(255, 255, 255, 0.25);
 
         &:hover {
-          background: rgba(24, 144, 255, 1);
+          background: rgba(255, 255, 255, 0.35);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
         }
       }
     }

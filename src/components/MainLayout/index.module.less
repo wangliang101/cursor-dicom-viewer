@@ -4,6 +4,24 @@
   height: 100vh;
   background: #f0f2f5;
   overflow: hidden;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background: linear-gradient(
+      180deg,
+      var(--primary-alpha-10) 0%,
+      var(--primary-alpha-05) 50%,
+      transparent 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
 }
 
 .contentArea {
@@ -12,6 +30,7 @@
   overflow: hidden;
   background: #f8fafb;
   position: relative;
+  z-index: 2;
 }
 
 // 确保各个面板的过渡效果流畅

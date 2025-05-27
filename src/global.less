@@ -8,3 +8,76 @@
 .ant-layout-content {
   width: 100% !important;
 }
+
+// 确保样式立即刷新的动画
+@keyframes colorRefresh {
+  from {
+    opacity: 0.99;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// 覆盖 Ant Design 主色调
+:root {
+  // Ant Design 主色调覆盖
+  --ant-primary-color: var(--primary-color);
+  --ant-primary-color-hover: var(--primary-color-light);
+  --ant-primary-color-active: var(--primary-color-dark);
+  --ant-primary-color-outline: var(--primary-alpha-20);
+}
+
+// 强制覆盖Ant Design按钮的蓝色
+.ant-btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-color-light)) !important;
+  border-color: var(--primary-color) !important;
+  animation: colorRefresh 0.1s ease-in-out;
+
+  &:hover,
+  &:focus {
+    background: linear-gradient(
+      135deg,
+      var(--primary-color-light),
+      var(--primary-color-lighter)
+    ) !important;
+    border-color: var(--primary-color-light) !important;
+  }
+
+  &:active {
+    background: var(--primary-color-dark) !important;
+    border-color: var(--primary-color-dark) !important;
+  }
+}
+
+// 覆盖Ant Design徽章颜色
+.ant-badge-count {
+  background-color: var(--primary-color) !important;
+}
+
+// 覆盖Ant Design滑块颜色
+.ant-slider-track {
+  background-color: var(--primary-color) !important;
+}
+
+.ant-slider-handle {
+  border-color: var(--primary-color) !important;
+}
+
+.ant-slider-handle:hover {
+  border-color: var(--primary-color-light) !important;
+}
+
+.ant-slider-handle:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 5px var(--primary-alpha-15) !important;
+}
+
+// 强制应用主色调到相关元素
+[class*='uploadBtn'],
+[class*='ant-btn-primary'],
+.toolbar .ant-btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-color-light)) !important;
+  border-color: var(--primary-color) !important;
+  animation: colorRefresh 0.1s ease-in-out;
+}
