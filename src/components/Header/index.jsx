@@ -21,7 +21,6 @@ const Header = ({
   isPlaying,
   currentImageIndex,
   totalImages,
-  onShowInfo,
   onShowSettings,
 }) => {
   return (
@@ -60,7 +59,6 @@ const Header = ({
             isPlaying={isPlaying}
             currentImageIndex={currentImageIndex}
             totalImages={totalImages}
-            onShowInfo={onShowInfo}
             onShowSettings={onShowSettings}
           />
         </div>

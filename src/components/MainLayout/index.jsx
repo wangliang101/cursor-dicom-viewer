@@ -23,7 +23,6 @@ const MainLayout = ({
   isPlaying,
   currentImageIndex,
   totalImages,
-  onShowInfo,
   onShowSettings,
 
   // SeriesPanel props
@@ -32,6 +31,7 @@ const MainLayout = ({
   onUpload,
   framesPerSecond,
   onFpsChange,
+  onShowTags,
 }) => {
   const [isSeriesPanelCollapsed, setIsSeriesPanelCollapsed] = useState(false);
   const [isControlPanelCollapsed, setIsControlPanelCollapsed] = useState(true); // 默认隐藏
@@ -64,7 +64,6 @@ const MainLayout = ({
         isPlaying={isPlaying}
         currentImageIndex={currentImageIndex}
         totalImages={totalImages}
-        onShowInfo={onShowInfo}
         onShowSettings={onShowSettings}
       />
 
@@ -83,6 +82,7 @@ const MainLayout = ({
           isPlaying={isPlaying}
           onPlay={onPlay}
           onStop={onStop}
+          onShowTags={onShowTags}
         />
 
         {/* 中央查看器 */}

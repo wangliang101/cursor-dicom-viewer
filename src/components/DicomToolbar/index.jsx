@@ -29,7 +29,6 @@ import {
   PauseCircleOutlined,
   StepForwardOutlined,
   StepBackwardOutlined,
-  InfoCircleOutlined,
   CompressOutlined,
   AimOutlined,
   LineOutlined,
@@ -82,7 +81,6 @@ const DicomToolbar = ({
   isPlaying,
   currentImageIndex,
   totalImages,
-  onShowInfo,
   onShowSettings,
 }) => {
   const [windowWidth, setWindowWidth] = useState(400);
@@ -441,7 +439,9 @@ const DicomToolbar = ({
         </Tooltip>
         {totalImages > 0 && (
           <span className={styles.frameInfo}>
-            {currentImageIndex + 1} / {totalImages}
+            <span className={styles.frameNumbers}>
+              {currentImageIndex + 1} / {totalImages}
+            </span>
           </span>
         )}
       </Space>
@@ -466,9 +466,6 @@ const DicomToolbar = ({
 
       {/* 其他功能组 */}
       <Space size="small">
-        <Tooltip title="图像信息">
-          <Button icon={<InfoCircleOutlined />} onClick={onShowInfo} />
-        </Tooltip>
         <Tooltip title="设置">
           <Button icon={<SettingOutlined />} onClick={onShowSettings} />
         </Tooltip>

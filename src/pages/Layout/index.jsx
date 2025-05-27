@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Modal, message } from 'antd';
 import DicomTagsViewer from '../../components/DicomTagsViewer';
 import MainLayout from '../../components/MainLayout';
@@ -166,10 +166,6 @@ function Layout() {
     }
   };
 
-  const showModal = () => {
-    setIsModalVisible(true);
-  };
-
   const handleCancel = () => {
     setIsModalVisible(false);
   };
@@ -187,39 +183,37 @@ function Layout() {
     setCurrentImageIndex(index);
   };
 
-  const playClip = () => {
+  const playClip = useCallback(() => {
     if (images.length <= 1) return;
     setIsPlaying(true);
     const interval = 1000 / framesPerSecond;
     timerRef.current = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+      setCurrentImageIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % images.length;
+        if (viewportRef.current) {
+          viewportRef.current.setImageIdIndex(nextIndex);
+        }
+        return nextIndex;
+      });
     }, interval);
-  };
+  }, [images.length, framesPerSecond]);
 
-  const stopClip = () => {
+  const stopClip = useCallback(() => {
     setIsPlaying(false);
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-  };
+  }, []);
 
-  const handleFpsChange = (value) => {
-    setFramesPerSecond(value);
-    if (isPlaying) {
-      stopClip();
-      playClip();
-    }
-  };
-
-  const showDicomTags = async () => {
-    if (images.length === 0 || currentImageIndex === -1) {
-      message.warning('请先上传 DICOM 文件');
+  const showDicomTagsForImage = async (imageIndex) => {
+    if (images.length === 0 || imageIndex < 0 || imageIndex >= images.length) {
+      message.warning('无效的图像索引');
       return;
     }
 
     try {
-      const imageId = images[currentImageIndex];
+      const imageId = images[imageIndex];
       const arrayBuffer = await fetch(imageId.replace('wadouri:', '')).then((res) =>
         res.arrayBuffer()
       );
@@ -255,12 +249,6 @@ function Layout() {
       }
     };
   }, []);
-
-  useEffect(() => {
-    if (images.length > 0 && isPlaying) {
-      viewportRef.current.setImageIdIndex(currentImageIndex);
-    }
-  }, [currentImageIndex]);
 
   // 工具栏事件处理函数
   const handleReset = () => {
@@ -337,14 +325,14 @@ function Layout() {
         isPlaying={isPlaying}
         currentImageIndex={currentImageIndex}
         totalImages={images.length}
-        onShowInfo={showDicomTags}
         onShowSettings={handleShowSettings}
         // SeriesPanel props
         images={images}
         onImageSelect={handleImageSelect}
-        onUpload={showModal}
+        onUpload={() => setIsModalVisible(true)}
         framesPerSecond={framesPerSecond}
-        onFpsChange={handleFpsChange}
+        onFpsChange={setFramesPerSecond}
+        onShowTags={showDicomTagsForImage}
       />
 
       <UploadModal open={isModalVisible} onCancel={handleCancel} onUpload={onUpload} />

@@ -6,6 +6,7 @@ import {
   FileImageOutlined,
   PlayCircleOutlined,
   PauseCircleOutlined,
+  TagsOutlined,
 } from '@ant-design/icons';
 import styles from './index.module.less';
 
@@ -21,6 +22,7 @@ const SeriesPanel = ({
   isPlaying,
   onPlay,
   onStop,
+  onShowTags,
 }) => {
   return (
     <div className={`${styles.seriesPanel} ${isCollapsed ? styles.collapsed : ''}`}>
@@ -42,26 +44,7 @@ const SeriesPanel = ({
 
       {!isCollapsed && (
         <div className={styles.content}>
-          {/* 上传区域 */}
-          <Card className={styles.uploadCard} bodyStyle={{ padding: '16px' }}>
-            <div className={styles.uploadSection}>
-              <UploadOutlined className={styles.uploadIcon} />
-              <Button
-                type="primary"
-                onClick={onUpload}
-                block
-                size="large"
-                className={styles.uploadBtn}
-              >
-                上传 DICOM 文件
-              </Button>
-              <p className={styles.uploadTip}>支持 .dcm 格式的医学影像文件</p>
-            </div>
-          </Card>
-
-          <Divider style={{ margin: '12px 0' }} />
-
-          {/* 图像列表 */}
+          {/* 图像列表 - 移到上方 */}
           <div className={styles.imageSection}>
             <div className={styles.sectionHeader}>
               <span className={styles.sectionTitle}>图像列表</span>
@@ -76,7 +59,6 @@ const SeriesPanel = ({
               <>
                 <List
                   className={styles.imageList}
-                  size="small"
                   dataSource={images}
                   renderItem={(item, index) => (
                     <List.Item
@@ -88,7 +70,24 @@ const SeriesPanel = ({
                       <div className={styles.imageItemContent}>
                         <FileImageOutlined className={styles.imageIcon} />
                         <span className={styles.imageName}>图像 {index + 1}</span>
-                        {index === currentImageIndex && <div className={styles.currentIndicator} />}
+                        <div
+                          className={`${styles.currentIndicator} ${
+                            index === currentImageIndex ? styles.visible : styles.hidden
+                          }`}
+                        />
+                        {/* 添加查看Tag按钮 */}
+                        <Tooltip title="查看 DICOM Tags">
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<TagsOutlined />}
+                            className={styles.tagButton}
+                            onClick={(e) => {
+                              e.stopPropagation(); // 阻止事件冒泡，避免触发图像选择
+                              onShowTags && onShowTags(index);
+                            }}
+                          />
+                        </Tooltip>
                       </div>
                     </List.Item>
                   )}
@@ -132,6 +131,25 @@ const SeriesPanel = ({
               </div>
             )}
           </div>
+
+          <Divider style={{ margin: '12px 0' }} />
+
+          {/* 上传区域 - 移到下方 */}
+          <Card className={styles.uploadCard} bodyStyle={{ padding: '16px' }}>
+            <div className={styles.uploadSection}>
+              <UploadOutlined className={styles.uploadIcon} />
+              <Button
+                type="primary"
+                onClick={onUpload}
+                block
+                size="large"
+                className={styles.uploadBtn}
+              >
+                上传 DICOM 文件
+              </Button>
+              <p className={styles.uploadTip}>支持 .dcm 格式的医学影像文件</p>
+            </div>
+          </Card>
         </div>
       )}
     </div>
