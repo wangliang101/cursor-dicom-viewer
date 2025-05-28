@@ -6,7 +6,7 @@ import { init as coreInit, RenderingEngine, Enums } from '@cornerstonejs/core';
 import { init as dicomImageLoaderInit } from '@cornerstonejs/dicom-image-loader';
 import dicomParser from 'dicom-parser';
 import UploadModal from '../../components/UploadModal';
-import { handleUpload } from '../../utils/uploadHandler';
+import { useDicomViewer } from '../../store/hooks/useDicomViewer';
 import {
   resetImage,
   flipHorizontal,
@@ -33,15 +33,37 @@ const renderingEngineId = 'myRenderingEngine';
 const viewportId = 'CT_AXIAL_STACK';
 
 function Layout() {
-  const [isTagModalVisible, setIsTagModalVisible] = useState(false);
+  // 使用自定义hook获取状态和方法
+  const {
+    // 状态
+    uploadModalVisible,
+    tagsModalVisible,
+    currentTool,
+    images,
+    currentImageIndex,
+    totalImages,
+    isPlaying,
+    framesPerSecond,
+
+    // 方法
+    setCurrentTool,
+    setFramesPerSecond,
+    resetViewerSettings,
+    uploadFiles,
+    closeUploadModal,
+    openUploadModal,
+    closeTagsModal,
+    openTagsModal,
+    selectImage,
+    playClip,
+    stopClip,
+    goToNextFrame,
+    goToPrevFrame,
+  } = useDicomViewer();
+
+  // 本地状态（仅保留与Cornerstone实例相关的状态）
   const [dicomTags, setDicomTags] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [images, setImages] = useState([]);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [activeTool, setActiveTool] = useState(WindowLevelTool.toolName);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [framesPerSecond, setFramesPerSecond] = useState(24);
   const timerRef = useRef(null);
   const viewerRef = useRef(null);
   const renderingEngineRef = useRef(null);
@@ -166,48 +188,20 @@ function Layout() {
     }
   };
 
-  const handleCancel = () => {
-    setIsModalVisible(false);
-  };
-
-  const onUpload = async (fileList) => {
-    const success = await handleUpload(fileList, setImages);
-    if (success) {
-      setIsModalVisible(false);
-      setCurrentImageIndex(0);
-    }
-  };
-
   const handleImageSelect = (index) => {
-    viewportRef.current.setImageIdIndex(index);
-    setCurrentImageIndex(index);
+    selectImage(index, viewportRef.current);
   };
 
-  const playClip = useCallback(() => {
-    if (images.length <= 1) return;
-    setIsPlaying(true);
-    const interval = 1000 / framesPerSecond;
-    timerRef.current = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => {
-        const nextIndex = (prevIndex + 1) % images.length;
-        if (viewportRef.current) {
-          viewportRef.current.setImageIdIndex(nextIndex);
-        }
-        return nextIndex;
-      });
-    }, interval);
-  }, [images.length, framesPerSecond]);
+  const handlePlayClip = useCallback(() => {
+    timerRef.current = playClip(viewportRef.current);
+  }, [playClip]);
 
-  const stopClip = useCallback(() => {
-    setIsPlaying(false);
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  }, []);
+  const handleStopClip = useCallback(() => {
+    stopClip(timerRef);
+  }, [stopClip]);
 
   const showDicomTagsForImage = async (imageIndex) => {
-    if (images.length === 0 || imageIndex < 0 || imageIndex >= images.length) {
+    if (totalImages === 0 || imageIndex < 0 || imageIndex >= totalImages) {
       message.warning('无效的图像索引');
       return;
     }
@@ -231,15 +225,11 @@ function Layout() {
       }
 
       setDicomTags(tags);
-      setIsTagModalVisible(true);
+      openTagsModal();
     } catch (error) {
       console.error('读取 DICOM tags 时出错:', error);
       message.error('读取 DICOM tags 失败');
     }
-  };
-
-  const handleTagModalClose = () => {
-    setIsTagModalVisible(false);
   };
 
   useEffect(() => {
@@ -254,6 +244,7 @@ function Layout() {
   const handleReset = () => {
     if (viewportRef.current) {
       resetImage(viewportRef.current);
+      resetViewerSettings();
     }
   };
 
@@ -282,23 +273,11 @@ function Layout() {
   };
 
   const handleNextFrame = () => {
-    if (images.length > 0) {
-      const nextIndex = (currentImageIndex + 1) % images.length;
-      setCurrentImageIndex(nextIndex);
-      if (viewportRef.current) {
-        viewportRef.current.setImageIdIndex(nextIndex);
-      }
-    }
+    goToNextFrame(viewportRef.current);
   };
 
   const handlePrevFrame = () => {
-    if (images.length > 0) {
-      const prevIndex = currentImageIndex === 0 ? images.length - 1 : currentImageIndex - 1;
-      setCurrentImageIndex(prevIndex);
-      if (viewportRef.current) {
-        viewportRef.current.setImageIdIndex(prevIndex);
-      }
-    }
+    goToPrevFrame(viewportRef.current);
   };
 
   const handleShowSettings = () => {
@@ -310,36 +289,36 @@ function Layout() {
       <MainLayout
         // Header props
         toolGroupRef={toolGroupRef}
-        activeTool={activeTool}
-        onToolChange={setActiveTool}
+        activeTool={currentTool}
+        onToolChange={setCurrentTool}
         viewportRef={viewerRef}
         onReset={handleReset}
         onFlipH={handleFlipH}
         onFlipV={handleFlipV}
         onRotate={handleRotate}
         onInvert={handleInvert}
-        onPlay={playClip}
-        onStop={stopClip}
+        onPlay={handlePlayClip}
+        onStop={handleStopClip}
         onNextFrame={handleNextFrame}
         onPrevFrame={handlePrevFrame}
         isPlaying={isPlaying}
         currentImageIndex={currentImageIndex}
-        totalImages={images.length}
+        totalImages={totalImages}
         onShowSettings={handleShowSettings}
         // SeriesPanel props
         images={images}
         onImageSelect={handleImageSelect}
-        onUpload={() => setIsModalVisible(true)}
+        onUpload={openUploadModal}
         framesPerSecond={framesPerSecond}
         onFpsChange={setFramesPerSecond}
         onShowTags={showDicomTagsForImage}
       />
 
-      <UploadModal open={isModalVisible} onCancel={handleCancel} onUpload={onUpload} />
+      <UploadModal open={uploadModalVisible} onCancel={closeUploadModal} onUpload={uploadFiles} />
       <Modal
         title="DICOM Tags"
-        open={isTagModalVisible}
-        onCancel={handleTagModalClose}
+        open={tagsModalVisible}
+        onCancel={closeTagsModal}
         footer={null}
         width={800}
       >

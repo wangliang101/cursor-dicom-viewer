@@ -5,10 +5,12 @@ export const createUISlice = (set) => ({
     isLoading: false,
     sidebarOpen: true,
     toolbarVisible: true,
-    currentTool: 'windowLevel',
+    currentTool: 'WindowLevel',
     fullscreen: false,
-    theme: 'dark',
-    language: 'zh-CN',
+    theme: 'light',
+    language: 'zh',
+    uploadModalVisible: false,
+    tagsModalVisible: false,
   },
 
   // 错误状态
@@ -79,6 +81,15 @@ export const createUISlice = (set) => ({
       'toggleToolbar'
     ),
 
+  setToolbarVisible: (visible) =>
+    set(
+      (state) => ({
+        ui: { ...state.ui, toolbarVisible: visible },
+      }),
+      false,
+      'setToolbarVisible'
+    ),
+
   setTheme: (theme) =>
     set(
       (state) => ({
@@ -97,43 +108,60 @@ export const createUISlice = (set) => ({
       'setLanguage'
     ),
 
-  // 错误处理
-  setError: (error) => set(() => ({ error }), false, 'setError'),
-
-  clearError: () => set(() => ({ error: null }), false, 'clearError'),
-
-  // 通知管理
-  addNotification: (notification) => {
-    const id = Date.now().toString();
-    const newNotification = {
-      id,
-      timestamp: new Date().toISOString(),
-      ...notification,
-    };
-
+  // 新增：模态框操作
+  setUploadModalVisible: (visible) =>
     set(
       (state) => ({
-        notifications: [...state.notifications, newNotification],
+        ui: { ...state.ui, uploadModalVisible: visible },
+      }),
+      false,
+      'setUploadModalVisible'
+    ),
+
+  setTagsModalVisible: (visible) =>
+    set(
+      (state) => ({
+        ui: { ...state.ui, tagsModalVisible: visible },
+      }),
+      false,
+      'setTagsModalVisible'
+    ),
+
+  // 错误处理
+  setError: (error) =>
+    set(
+      () => ({
+        error,
+      }),
+      false,
+      'setError'
+    ),
+
+  clearError: () =>
+    set(
+      () => ({
+        error: null,
+      }),
+      false,
+      'clearError'
+    ),
+
+  // 通知系统
+  addNotification: (notification) =>
+    set(
+      (state) => ({
+        notifications: [
+          ...state.notifications,
+          {
+            ...notification,
+            id: Date.now().toString(),
+            timestamp: new Date().toISOString(),
+          },
+        ],
       }),
       false,
       'addNotification'
-    );
-
-    // 自动移除通知
-    if (notification.autoRemove !== false) {
-      setTimeout(() => {
-        set(
-          (state) => ({
-            notifications: state.notifications.filter((n) => n.id !== id),
-          }),
-          false,
-          'autoRemoveNotification'
-        );
-      }, notification.duration || 5000);
-    }
-
-    return id;
-  },
+    ),
 
   removeNotification: (id) =>
     set(
@@ -144,43 +172,58 @@ export const createUISlice = (set) => ({
       'removeNotification'
     ),
 
-  clearNotifications: () => set(() => ({ notifications: [] }), false, 'clearNotifications'),
+  clearNotifications: () =>
+    set(
+      () => ({
+        notifications: [],
+      }),
+      false,
+      'clearNotifications'
+    ),
 
-  // 复合UI操作
-  showSuccess: (message, options = {}) => {
-    const { addNotification } = set.getState ? set.getState() : {};
-    return addNotification?.({
-      type: 'success',
-      message,
-      ...options,
-    });
+  // 复合操作
+  showSuccess: (message) => {
+    const { addNotification } = set.get ? set.get() : {};
+    if (addNotification) {
+      addNotification({
+        type: 'success',
+        message,
+        duration: 3000,
+      });
+    }
   },
 
-  showError: (message, options = {}) => {
-    const { addNotification } = set.getState ? set.getState() : {};
-    return addNotification?.({
-      type: 'error',
-      message,
-      autoRemove: false,
-      ...options,
-    });
+  showError: (message) => {
+    const { addNotification, setError } = set.get ? set.get() : {};
+    if (addNotification && setError) {
+      setError(message);
+      addNotification({
+        type: 'error',
+        message,
+        duration: 5000,
+      });
+    }
   },
 
-  showWarning: (message, options = {}) => {
-    const { addNotification } = set.getState ? set.getState() : {};
-    return addNotification?.({
-      type: 'warning',
-      message,
-      ...options,
-    });
+  showWarning: (message) => {
+    const { addNotification } = set.get ? set.get() : {};
+    if (addNotification) {
+      addNotification({
+        type: 'warning',
+        message,
+        duration: 4000,
+      });
+    }
   },
 
-  showInfo: (message, options = {}) => {
-    const { addNotification } = set.getState ? set.getState() : {};
-    return addNotification?.({
-      type: 'info',
-      message,
-      ...options,
-    });
+  showInfo: (message) => {
+    const { addNotification } = set.get ? set.get() : {};
+    if (addNotification) {
+      addNotification({
+        type: 'info',
+        message,
+        duration: 3000,
+      });
+    }
   },
 });
