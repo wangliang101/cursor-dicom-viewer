@@ -235,7 +235,7 @@ export const createDicomSlice = (set, get) => ({
   },
 
   // 处理上传文件列表并生成图像ID
-  processUploadedFiles: async (fileList) => {
+  processUploadedFiles: async (fileList, sortMethod = 'dicom') => {
     const { setImages, setLoading, setError } = get();
 
     try {
@@ -243,7 +243,37 @@ export const createDicomSlice = (set, get) => ({
       setError(null);
 
       if (fileList && fileList.length > 0) {
-        const imageIds = fileList.map(
+        console.log(
+          '原始文件顺序:',
+          fileList.map((f) => f.name || f.originFileObj?.name)
+        );
+
+        let sortedFileList;
+
+        if (sortMethod === 'dicom') {
+          // 导入排序工具
+          const { sortDicomFiles } = await import('../../utils/dicomSorter');
+          // 对DICOM文件进行标签排序
+          sortedFileList = await sortDicomFiles(fileList);
+          console.log('使用DICOM标签排序');
+        } else if (sortMethod === 'filename') {
+          // 导入排序工具
+          const { sortByFileName } = await import('../../utils/dicomSorter');
+          // 按文件名排序
+          sortedFileList = sortByFileName(fileList);
+          console.log('使用文件名排序');
+        } else {
+          // 不排序，保持原始顺序
+          sortedFileList = fileList;
+          console.log('保持原始顺序');
+        }
+
+        console.log(
+          '排序后文件顺序:',
+          sortedFileList.map((f) => f.name || f.originFileObj?.name)
+        );
+
+        const imageIds = sortedFileList.map(
           (file) => `wadouri:${URL.createObjectURL(file.originFileObj)}`
         );
         setImages(imageIds);

@@ -1,12 +1,12 @@
 import { message } from 'antd';
 import useDicomStore from '../store';
 
-export const handleUpload = async (fileList) => {
+export const handleUpload = async (fileList, sortMethod = 'dicom') => {
   const { processUploadedFiles, showSuccess, showError } = useDicomStore.getState();
 
   if (fileList && fileList.length > 0) {
     try {
-      const imageIds = await processUploadedFiles(fileList);
+      const imageIds = await processUploadedFiles(fileList, sortMethod);
       console.log('生成的 Image IDs:', imageIds);
       showSuccess(`成功加载 ${imageIds.length} 个 DICOM 文件`);
       message.success(`成功加载 ${imageIds.length} 个 DICOM 文件`);

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Modal, Upload, message, Tabs, List, Button } from 'antd';
+import { Modal, Upload, message, Tabs, List, Button, Radio, Space } from 'antd';
 import { InboxOutlined, FolderOpenOutlined, FileOutlined, DeleteOutlined } from '@ant-design/icons';
 import styles from './index.module.less';
 
@@ -8,6 +8,7 @@ const { Dragger } = Upload;
 function UploadModal({ open, onCancel, onUpload }) {
   const [fileList, setFileList] = useState([]);
   const [activeTab, setActiveTab] = useState('file');
+  const [sortMethod, setSortMethod] = useState('dicom'); // 'dicom' 或 'filename'
 
   // 统一的文件处理配置
   const uploadProps = {
@@ -33,7 +34,7 @@ function UploadModal({ open, onCancel, onUpload }) {
 
   const handleOk = () => {
     if (fileList.length > 0) {
-      onUpload(fileList);
+      onUpload(fileList, sortMethod);
       setFileList([]); // 清空文件列表
     } else {
       message.warning('请先选择DICOM文件或文件夹');
@@ -43,6 +44,7 @@ function UploadModal({ open, onCancel, onUpload }) {
   const handleCancel = () => {
     setFileList([]); // 关闭时清空文件列表
     setActiveTab('file'); // 重置到文件上传tab
+    setSortMethod('dicom'); // 重置排序方式
     onCancel();
   };
 
@@ -131,6 +133,18 @@ function UploadModal({ open, onCancel, onUpload }) {
               清空列表
             </Button>
           </div>
+
+          {/* 添加排序选项 */}
+          <div className={styles.sortOptions}>
+            <Space>
+              <span>排序方式:</span>
+              <Radio.Group value={sortMethod} onChange={(e) => setSortMethod(e.target.value)}>
+                <Radio value="dicom">DICOM标签排序</Radio>
+                <Radio value="filename">文件名排序</Radio>
+              </Radio.Group>
+            </Space>
+          </div>
+
           <div className={styles.fileListWrapper}>
             <List
               size="small"

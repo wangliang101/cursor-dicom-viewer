@@ -44,8 +44,8 @@ export const useDicomViewer = () => {
 
   // 封装的方法
   const uploadFiles = useCallback(
-    async (fileList) => {
-      const success = await handleUpload(fileList);
+    async (fileList, sortMethod) => {
+      const success = await handleUpload(fileList, sortMethod);
       if (success) {
         setUploadModalVisible(false);
       }
