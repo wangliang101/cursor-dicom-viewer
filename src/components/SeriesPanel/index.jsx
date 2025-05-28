@@ -1,11 +1,9 @@
-import { Button, List, Slider, Card, Divider, Badge, Tooltip } from 'antd';
+import { Button, List, Card, Divider, Badge, Tooltip } from 'antd';
 import {
   LeftOutlined,
   RightOutlined,
   UploadOutlined,
   FileImageOutlined,
-  PlayCircleOutlined,
-  PauseCircleOutlined,
   TagsOutlined,
 } from '@ant-design/icons';
 import styles from './index.module.less';
@@ -17,11 +15,6 @@ const SeriesPanel = ({
   currentImageIndex,
   onImageSelect,
   onUpload,
-  framesPerSecond,
-  onFpsChange,
-  isPlaying,
-  onPlay,
-  onStop,
   onShowTags,
 }) => {
   return (
@@ -44,7 +37,7 @@ const SeriesPanel = ({
 
       {!isCollapsed && (
         <div className={styles.content}>
-          {/* 图像列表 - 移到上方 */}
+          {/* 图像列表 */}
           <div className={styles.imageSection}>
             <div className={styles.sectionHeader}>
               <span className={styles.sectionTitle}>图像列表</span>
@@ -56,73 +49,41 @@ const SeriesPanel = ({
             </div>
 
             {images.length > 0 ? (
-              <>
-                <List
-                  className={styles.imageList}
-                  dataSource={images}
-                  renderItem={(item, index) => (
-                    <List.Item
-                      onClick={() => onImageSelect(index)}
-                      className={`${styles.imageItem} ${
-                        index === currentImageIndex ? styles.selectedImage : ''
-                      }`}
-                    >
-                      <div className={styles.imageItemContent}>
-                        <FileImageOutlined className={styles.imageIcon} />
-                        <span className={styles.imageName}>图像 {index + 1}</span>
-                        <div
-                          className={`${styles.currentIndicator} ${
-                            index === currentImageIndex ? styles.visible : styles.hidden
-                          }`}
-                        />
-                        {/* 添加查看Tag按钮 */}
-                        <Tooltip title="查看 DICOM Tags">
-                          <Button
-                            type="text"
-                            size="small"
-                            icon={<TagsOutlined />}
-                            className={styles.tagButton}
-                            onClick={(e) => {
-                              e.stopPropagation(); // 阻止事件冒泡，避免触发图像选择
-                              onShowTags && onShowTags(index);
-                            }}
-                          />
-                        </Tooltip>
-                      </div>
-                    </List.Item>
-                  )}
-                />
-
-                {/* 播放控制 */}
-                {images.length > 1 && (
-                  <Card className={styles.playbackCard} bodyStyle={{ padding: '12px' }}>
-                    <div className={styles.playbackControls}>
-                      <div className={styles.playButton}>
+              <List
+                className={styles.imageList}
+                dataSource={images}
+                renderItem={(item, index) => (
+                  <List.Item
+                    onClick={() => onImageSelect(index)}
+                    className={`${styles.imageItem} ${
+                      index === currentImageIndex ? styles.selectedImage : ''
+                    }`}
+                  >
+                    <div className={styles.imageItemContent}>
+                      <FileImageOutlined className={styles.imageIcon} />
+                      <span className={styles.imageName}>图像 {index + 1}</span>
+                      <div
+                        className={`${styles.currentIndicator} ${
+                          index === currentImageIndex ? styles.visible : styles.hidden
+                        }`}
+                      />
+                      {/* 查看Tag按钮 */}
+                      <Tooltip title="查看 DICOM Tags">
                         <Button
-                          type={isPlaying ? 'default' : 'primary'}
-                          icon={isPlaying ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
-                          onClick={isPlaying ? onStop : onPlay}
+                          type="text"
                           size="small"
-                        >
-                          {isPlaying ? '暂停' : '播放'}
-                        </Button>
-                      </div>
-
-                      <div className={styles.fpsControl}>
-                        <label className={styles.fpsLabel}>帧率: {framesPerSecond} fps</label>
-                        <Slider
-                          min={1}
-                          max={60}
-                          value={framesPerSecond}
-                          onChange={onFpsChange}
-                          disabled={isPlaying}
-                          className={styles.fpsSlider}
+                          icon={<TagsOutlined />}
+                          className={styles.tagButton}
+                          onClick={(e) => {
+                            e.stopPropagation(); // 阻止事件冒泡，避免触发图像选择
+                            onShowTags && onShowTags(index);
+                          }}
                         />
-                      </div>
+                      </Tooltip>
                     </div>
-                  </Card>
+                  </List.Item>
                 )}
-              </>
+              />
             ) : (
               <div className={styles.emptyState}>
                 <FileImageOutlined className={styles.emptyIcon} />
@@ -134,8 +95,8 @@ const SeriesPanel = ({
 
           <Divider style={{ margin: '12px 0' }} />
 
-          {/* 上传区域 - 移到下方 */}
-          <Card className={styles.uploadCard} bodyStyle={{ padding: '16px' }}>
+          {/* 上传区域 */}
+          <Card className={styles.uploadCard} styles={{ body: { padding: '16px' } }}>
             <div className={styles.uploadSection}>
               <UploadOutlined className={styles.uploadIcon} />
               <Button

@@ -38,10 +38,10 @@ function Layout() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [images, setImages] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [framesPerSecond, setFramesPerSecond] = useState(24);
   const [activeTool, setActiveTool] = useState(WindowLevelTool.toolName);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [framesPerSecond, setFramesPerSecond] = useState(24);
   const timerRef = useRef(null);
   const viewerRef = useRef(null);
   const renderingEngineRef = useRef(null);

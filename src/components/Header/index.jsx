@@ -22,6 +22,10 @@ const Header = ({
   currentImageIndex,
   totalImages,
   onShowSettings,
+  currentLayout,
+  onLayoutChange,
+  framesPerSecond,
+  onFpsChange,
 }) => {
   return (
     <div className={styles.header}>
@@ -68,6 +72,10 @@ const Header = ({
             currentImageIndex={currentImageIndex}
             totalImages={totalImages}
             onShowSettings={onShowSettings}
+            currentLayout={currentLayout}
+            onLayoutChange={onLayoutChange}
+            framesPerSecond={framesPerSecond}
+            onFpsChange={onFpsChange}
           />
         </div>
       </div>

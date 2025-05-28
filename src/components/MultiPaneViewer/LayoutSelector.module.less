@@ -1,0 +1,125 @@
+.layoutButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #d9d9d9;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: #4096ff;
+  }
+
+  &:focus {
+    background: rgba(24, 144, 255, 0.1);
+    border-color: #4096ff;
+  }
+
+  .header-toolbar & {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.9);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+  }
+}
+
+.layoutText {
+  font-size: 12px;
+  color: #333;
+  white-space: nowrap;
+  font-weight: 500;
+
+  .header-toolbar & {
+    color: rgba(255, 255, 255, 0.95);
+  }
+}
+
+.dropdownIcon {
+  font-size: 10px;
+  color: #666;
+  transition: transform 0.2s ease;
+
+  .layoutButton:hover & {
+    color: #4096ff;
+  }
+
+  .header-toolbar & {
+    color: rgba(255, 255, 255, 0.7);
+
+    .layoutButton:hover & {
+      color: rgba(255, 255, 255, 0.95);
+    }
+  }
+}
+
+:global(.ant-dropdown-open) .dropdownIcon {
+  transform: rotate(180deg);
+}
+
+.layoutDropdown {
+  :global(.ant-dropdown-menu) {
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+    background: #fff;
+  }
+
+  :global(.ant-dropdown-menu-item) {
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    &:hover {
+      background: #f5f5f5;
+    }
+
+    &:active {
+      background: #e6f7ff;
+    }
+  }
+}
+
+.layoutOption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.layoutIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+
+  svg {
+    display: block;
+  }
+}
+
+.layoutName {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+}
+
+.layoutDesc {
+  font-size: 11px;
+  color: #999;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}

@@ -49,20 +49,11 @@ import {
   Enums as csToolsEnums,
   addTool,
 } from '@cornerstonejs/tools';
+import LayoutSelector from '../MultiPaneViewer/LayoutSelector';
+import { WINDOW_PRESETS, DEFAULT_SETTINGS } from '../../constants';
 import styles from './index.module.less';
 
 const { Option } = Select;
-
-// 预设窗宽窗位值
-const WINDOW_PRESETS = {
-  lung: { width: 1500, center: -600, name: '肺窗' },
-  abdomen: { width: 400, center: 50, name: '腹部窗' },
-  brain: { width: 80, center: 40, name: '脑窗' },
-  bone: { width: 2000, center: 300, name: '骨窗' },
-  mediastinum: { width: 350, center: 50, name: '纵隔窗' },
-  liver: { width: 150, center: 30, name: '肝脏窗' },
-  custom: { width: 400, center: 40, name: '自定义' },
-};
 
 const DicomToolbar = ({
   toolGroupRef,
@@ -84,12 +75,17 @@ const DicomToolbar = ({
   onShowSettings,
   className,
   style,
+  currentLayout,
+  onLayoutChange,
+  framesPerSecond = 24,
+  onFpsChange,
 }) => {
-  const [windowWidth, setWindowWidth] = useState(400);
-  const [windowCenter, setWindowCenter] = useState(40);
+  const [windowWidth, setWindowWidth] = useState(DEFAULT_SETTINGS.WINDOW_WIDTH);
+  const [windowCenter, setWindowCenter] = useState(DEFAULT_SETTINGS.WINDOW_CENTER);
   const [selectedPreset, setSelectedPreset] = useState('custom');
   const [zoomLevel, setZoomLevel] = useState(1.0);
   const [showWindowControl, setShowWindowControl] = useState(false);
+  const [showFpsControl, setShowFpsControl] = useState(false);
 
   // 初始化所有工具
   useEffect(() => {
@@ -175,7 +171,7 @@ const DicomToolbar = ({
   const handleZoomIn = () => {
     if (viewportRef?.current) {
       const camera = viewportRef.current.getCamera();
-      const newZoom = camera.zoom * 1.2;
+      const newZoom = camera.zoom * DEFAULT_SETTINGS.ZOOM_FACTOR;
       setZoomLevel(newZoom);
       viewportRef.current.setCamera({ zoom: newZoom });
       viewportRef.current.render();
@@ -185,7 +181,7 @@ const DicomToolbar = ({
   const handleZoomOut = () => {
     if (viewportRef?.current) {
       const camera = viewportRef.current.getCamera();
-      const newZoom = camera.zoom / 1.2;
+      const newZoom = camera.zoom / DEFAULT_SETTINGS.ZOOM_FACTOR;
       setZoomLevel(newZoom);
       viewportRef.current.setCamera({ zoom: newZoom });
       viewportRef.current.render();
@@ -446,6 +442,48 @@ const DicomToolbar = ({
             </span>
           </span>
         )}
+        {/* 帧率控制 */}
+        {totalImages > 1 && (
+          <Popover
+            content={
+              <div style={{ width: 200, padding: 8 }}>
+                <div style={{ marginBottom: 8 }}>
+                  <label style={{ fontSize: 12, color: '#595959' }}>
+                    播放帧率: {framesPerSecond} fps
+                  </label>
+                </div>
+                <Slider
+                  min={1}
+                  max={60}
+                  value={framesPerSecond}
+                  onChange={onFpsChange}
+                  disabled={isPlaying}
+                  marks={{
+                    1: '1',
+                    24: '24',
+                    30: '30',
+                    60: '60',
+                  }}
+                />
+              </div>
+            }
+            title="播放速度设置"
+            trigger="click"
+            open={showFpsControl}
+            onOpenChange={setShowFpsControl}
+            placement="bottom"
+          >
+            <Tooltip title="播放速度设置">
+              <Button
+                icon={<SettingOutlined />}
+                size="small"
+                style={{ fontSize: '10px', width: '60px' }}
+              >
+                {framesPerSecond}fps
+              </Button>
+            </Tooltip>
+          </Popover>
+        )}
       </Space>
 
       <Divider type="vertical" />
@@ -464,6 +502,13 @@ const DicomToolbar = ({
             <Button icon={<SettingOutlined />} />
           </Tooltip>
         </Popover>
+      </Space>
+
+      <Divider type="vertical" />
+
+      {/* 布局选择器 */}
+      <Space size="small">
+        <LayoutSelector currentLayout={currentLayout} onLayoutChange={onLayoutChange} />
       </Space>
 
       <Divider type="vertical" />

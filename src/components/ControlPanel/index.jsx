@@ -1,6 +1,8 @@
-import { Button, Card, Tooltip, Empty } from 'antd';
+import { Button, Card, Tooltip, Empty, Typography } from 'antd';
 import { RightOutlined, LeftOutlined, SettingOutlined, ToolOutlined } from '@ant-design/icons';
 import styles from './index.module.less';
+
+const { Title } = Typography;
 
 const ControlPanel = ({ isCollapsed, onToggle }) => {
   return (
@@ -23,19 +25,22 @@ const ControlPanel = ({ isCollapsed, onToggle }) => {
       {!isCollapsed && (
         <div className={styles.content}>
           {/* 预留的功能区域 */}
-          <Card className={styles.functionCard} bodyStyle={{ padding: '16px' }}>
-            <div className={styles.comingSoon}>
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description={
-                  <div className={styles.emptyDescription}>
-                    <p className={styles.emptyTitle}>功能开发中</p>
-                    <p className={styles.emptySubtitle}>更多医学影像分析工具即将上线</p>
-                  </div>
-                }
-              />
-            </div>
-          </Card>
+          <div className={styles.controlContent}>
+            <Card className={styles.functionCard} styles={{ body: { padding: '16px' } }}>
+              <Title level={5}>图像信息</Title>
+              <div className={styles.comingSoon}>
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description={
+                    <div className={styles.emptyDescription}>
+                      <p className={styles.emptyTitle}>功能开发中</p>
+                      <p className={styles.emptySubtitle}>更多医学影像分析工具即将上线</p>
+                    </div>
+                  }
+                />
+              </div>
+            </Card>
+          </div>
 
           {/* 快速设置区域 */}
           <Card
@@ -46,7 +51,7 @@ const ControlPanel = ({ isCollapsed, onToggle }) => {
               </div>
             }
             className={styles.settingsCard}
-            bodyStyle={{ padding: '16px' }}
+            styles={{ body: { padding: '16px' } }}
           >
             <div className={styles.settingItem}>
               <span className={styles.settingLabel}>显示网格</span>

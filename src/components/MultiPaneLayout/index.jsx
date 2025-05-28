@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Header from '../Header';
 import SeriesPanel from '../SeriesPanel';
-import ViewerContainer from '../ViewerContainer';
+import MultiPaneViewer from '../MultiPaneViewer';
 import ControlPanel from '../ControlPanel';
 import { DEFAULT_LAYOUT } from '../../constants';
 import styles from './index.module.less';
 
-const MainLayout = ({
+const MultiPaneLayout = ({
   // Header props
   toolGroupRef,
   activeTool,
@@ -35,33 +35,27 @@ const MainLayout = ({
   onShowTags,
 }) => {
   const [isSeriesPanelCollapsed, setIsSeriesPanelCollapsed] = useState(false);
-  const [isControlPanelCollapsed, setIsControlPanelCollapsed] = useState(true); // 默认隐藏
+  const [isControlPanelCollapsed, setIsControlPanelCollapsed] = useState(true);
   const [currentLayout, setCurrentLayout] = useState(DEFAULT_LAYOUT);
+  const multiPaneViewerRef = useRef(null);
 
   // 响应式状态管理
   useEffect(() => {
     const handleResize = () => {
       const isMobileScreen = window.innerWidth <= 768;
 
-      // 在移动端，默认折叠两个面板以节省空间
       if (isMobileScreen) {
-        // 如果之前没有图片，在小屏幕上默认折叠序列区
         if (!images || images.length === 0) {
           setIsSeriesPanelCollapsed(true);
         }
-        // 控制区在小屏幕上默认保持折叠
         setIsControlPanelCollapsed(true);
       } else {
-        // 桌面端恢复正常状态
         setIsSeriesPanelCollapsed(false);
         setIsControlPanelCollapsed(true);
       }
     };
 
-    // 初始化检查
     handleResize();
-
-    // 添加窗口尺寸变化监听
     window.addEventListener('resize', handleResize);
 
     return () => {
@@ -82,8 +76,17 @@ const MainLayout = ({
     console.log('布局已切换到:', newLayout);
   };
 
+  // 暂时注释掉未使用的函数
+  // const handleViewportRef = (viewport) => {
+  //   if (viewportRef && typeof viewportRef === 'function') {
+  //     viewportRef(viewport);
+  //   } else if (viewportRef && typeof viewportRef === 'object') {
+  //     viewportRef.current = viewport;
+  //   }
+  // };
+
   return (
-    <div className={styles.mainLayout}>
+    <div className={styles.multiPaneLayout}>
       {/* 顶部Header */}
       <Header
         toolGroupRef={toolGroupRef}
@@ -105,8 +108,6 @@ const MainLayout = ({
         onShowSettings={onShowSettings}
         currentLayout={currentLayout}
         onLayoutChange={handleLayoutChange}
-        framesPerSecond={framesPerSecond}
-        onFpsChange={onFpsChange}
       />
 
       {/* 主体内容区域 */}
@@ -127,13 +128,16 @@ const MainLayout = ({
           onShowTags={onShowTags}
         />
 
-        {/* 中央查看器 */}
-        <ViewerContainer
-          ref={viewportRef}
+        {/* 中央多窗格查看器 */}
+        <MultiPaneViewer
+          ref={multiPaneViewerRef}
           images={images}
           currentImageIndex={currentImageIndex}
-          currentLayout={currentLayout}
+          layout={currentLayout}
           onLayoutChange={handleLayoutChange}
+          toolGroupRef={toolGroupRef}
+          activeTool={activeTool}
+          onToolChange={onToolChange}
         />
 
         {/* 右侧操控区 */}
@@ -143,4 +147,4 @@ const MainLayout = ({
   );
 };
 
-export default MainLayout;
+export default MultiPaneLayout;
