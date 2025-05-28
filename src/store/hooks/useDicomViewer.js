@@ -24,8 +24,6 @@ export const useDicomViewer = () => {
     isPlaying,
     framesPerSecond,
     setCurrentImageIndex,
-    nextImage,
-    prevImage,
     setIsPlaying,
     setFramesPerSecond,
     removeCurrentImage,
@@ -72,27 +70,70 @@ export const useDicomViewer = () => {
 
   const selectImage = useCallback(
     (index, viewport) => {
+      // 先更新状态
+      setCurrentImageIndex(index);
+      // 再更新viewport并渲染
       if (viewport) {
         viewport.setImageIdIndex(index);
+        viewport.render();
       }
-      setCurrentImageIndex(index);
     },
     [setCurrentImageIndex]
   );
 
   const playClip = useCallback(
     (viewport) => {
-      if (totalImages <= 1) return;
+      if (totalImages <= 1) {
+        return;
+      }
       setIsPlaying(true);
-      return setInterval(() => {
-        nextImage();
-        if (viewport) {
-          const state = useDicomStore.getState();
-          viewport.setImageIdIndex(state.currentImageIndex);
+
+      // 立即执行一次帧切换，避免第一圈延迟
+      // 直接在当前上下文中计算下一帧，不依赖异步状态获取
+      const nextIndex = (currentImageIndex + 1) % totalImages;
+
+      // 先更新viewport，再更新状态
+      if (viewport && viewport.setImageIdIndex) {
+        try {
+          viewport.setImageIdIndex(nextIndex);
+          viewport.render();
+
+          // viewport更新成功后，再更新状态
+          setCurrentImageIndex(nextIndex);
+        } catch (error) {
+          console.error('立即更新viewport失败:', error);
+        }
+      } else {
+        console.warn('viewport不存在或缺少setImageIdIndex方法！');
+        // 如果viewport不存在，仍然更新状态
+        setCurrentImageIndex(nextIndex);
+      }
+
+      return setInterval(async () => {
+        // 获取当前状态
+        const currentState = useDicomStore.getState();
+        // 计算下一帧索引
+        const nextIndex = (currentState.currentImageIndex + 1) % currentState.totalImages;
+
+        // 先更新viewport，再更新状态
+        if (viewport && viewport.setImageIdIndex) {
+          try {
+            await viewport.setImageIdIndex(nextIndex);
+            viewport.render();
+
+            // viewport更新成功后，再更新状态
+            setCurrentImageIndex(nextIndex);
+          } catch (error) {
+            console.error('更新viewport失败:', error);
+          }
+        } else {
+          console.warn('viewport不存在或缺少setImageIdIndex方法！');
+          // 如果viewport不存在，仍然更新状态
+          setCurrentImageIndex(nextIndex);
         }
       }, 1000 / framesPerSecond);
     },
-    [totalImages, framesPerSecond, nextImage, setIsPlaying]
+    [totalImages, framesPerSecond, currentImageIndex, setCurrentImageIndex, setIsPlaying]
   );
 
   const stopClip = useCallback(
@@ -109,40 +150,63 @@ export const useDicomViewer = () => {
   const goToNextFrame = useCallback(
     (viewport) => {
       if (totalImages > 0) {
-        nextImage();
+        // 获取当前状态并计算下一帧索引
+        const currentState = useDicomStore.getState();
+        const nextIndex = (currentState.currentImageIndex + 1) % currentState.totalImages;
+
+        // 直接设置下一帧索引
+        setCurrentImageIndex(nextIndex);
+
+        // 更新viewport并渲染
         if (viewport) {
-          const state = useDicomStore.getState();
-          viewport.setImageIdIndex(state.currentImageIndex);
+          viewport.setImageIdIndex(nextIndex);
+          viewport.render(); // 添加render调用
+        } else {
+          console.warn('手动切换：viewport不存在！');
         }
       }
     },
-    [totalImages, nextImage]
+    [totalImages, setCurrentImageIndex]
   );
 
   const goToPrevFrame = useCallback(
     (viewport) => {
       if (totalImages > 0) {
-        prevImage();
+        // 获取当前状态并计算上一帧索引
+        const currentState = useDicomStore.getState();
+        const prevIndex =
+          currentState.currentImageIndex === 0
+            ? currentState.totalImages - 1
+            : currentState.currentImageIndex - 1;
+
+        // 直接设置上一帧索引
+        setCurrentImageIndex(prevIndex);
+
+        // 更新viewport并渲染
         if (viewport) {
-          const state = useDicomStore.getState();
-          viewport.setImageIdIndex(state.currentImageIndex);
+          viewport.setImageIdIndex(prevIndex);
+          viewport.render();
         }
       }
     },
-    [totalImages, prevImage]
+    [totalImages, setCurrentImageIndex]
   );
 
   // 删除相关的方法
   const deleteCurrentImage = useCallback(
     (viewport) => {
       if (totalImages > 0) {
+        // 执行删除操作
         removeCurrentImage();
         showSuccess('当前图像已删除');
+
         // 如果还有图像，更新viewport
         if (totalImages > 1 && viewport) {
-          const state = useDicomStore.getState();
-          if (state.totalImages > 0) {
-            viewport.setImageIdIndex(state.currentImageIndex);
+          // 重新获取删除后的状态
+          const newState = useDicomStore.getState();
+          if (newState.totalImages > 0) {
+            viewport.setImageIdIndex(newState.currentImageIndex);
+            viewport.render();
           }
         }
       }
@@ -153,12 +217,18 @@ export const useDicomViewer = () => {
   const deleteImageByIndex = useCallback(
     (index, viewport) => {
       if (index >= 0 && index < totalImages) {
+        // 执行删除操作
         removeImageByIndex(index);
         showSuccess(`图像 ${index + 1} 已删除`);
+
         // 如果还有图像，更新viewport
-        const state = useDicomStore.getState();
-        if (state.totalImages > 0 && viewport) {
-          viewport.setImageIdIndex(state.currentImageIndex);
+        if (viewport) {
+          // 获取删除后的状态
+          const newState = useDicomStore.getState();
+          if (newState.totalImages > 0) {
+            viewport.setImageIdIndex(newState.currentImageIndex);
+            viewport.render();
+          }
         }
       }
     },

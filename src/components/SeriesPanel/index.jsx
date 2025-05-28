@@ -1,4 +1,5 @@
 import { Button, List, Card, Divider, Badge, Tooltip, Popconfirm } from 'antd';
+import { useRef, useEffect } from 'react';
 import {
   LeftOutlined,
   RightOutlined,
@@ -22,6 +23,21 @@ const SeriesPanel = ({
   onDeleteByIndex,
   onClearAll,
 }) => {
+  const listRef = useRef(null);
+  const selectedItemRef = useRef(null);
+
+  // 当currentImageIndex变化时，自动滚动到选中项
+  useEffect(() => {
+    if (selectedItemRef.current && listRef.current && !isCollapsed) {
+      // 使用 scrollIntoView 滚动到选中的元素
+      selectedItemRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest',
+      });
+    }
+  }, [currentImageIndex, isCollapsed]);
+
   return (
     <div className={`${styles.seriesPanel} ${isCollapsed ? styles.collapsed : ''}`}>
       <div className={styles.header}>
@@ -91,10 +107,12 @@ const SeriesPanel = ({
 
             {images.length > 0 ? (
               <List
+                ref={listRef}
                 className={styles.imageList}
                 dataSource={images}
                 renderItem={(item, index) => (
                   <List.Item
+                    ref={index === currentImageIndex ? selectedItemRef : null}
                     onClick={() => onImageSelect(index)}
                     className={`${styles.imageItem} ${
                       index === currentImageIndex ? styles.selectedImage : ''
