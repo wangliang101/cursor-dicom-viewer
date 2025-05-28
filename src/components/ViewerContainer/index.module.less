@@ -17,6 +17,7 @@
   overflow: hidden;
   min-width: 0;
   min-height: 0;
+  height: 100%;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   :global(.ant-card-body) {
@@ -39,8 +40,49 @@
   border-radius: 12px 12px 0 0;
   overflow: hidden;
   min-width: 0;
+  width: 100%;
+  height: 100%;
 
   contain: layout;
+
+  // cornerstone.js 需要的样式
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    transition: all 0.3s ease;
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+  }
+
+  // 确保cornerstone容器元素撑满父容器
+  > div:not(.placeholder) {
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.3s ease;
+    position: relative;
+
+    // 确保内部元素也能撑满
+    > * {
+      width: 100% !important;
+      height: 100% !important;
+    }
+  }
+
+  // 当有图像数据时，确保容器适应
+  &:has(canvas) {
+    align-items: stretch;
+    justify-content: stretch;
+
+    > div {
+      align-items: stretch !important;
+      justify-content: stretch !important;
+    }
+  }
 }
 
 // 占位符样式
@@ -294,26 +336,5 @@
   .placeholderDescription {
     font-size: 9px;
     margin-bottom: 8px;
-  }
-}
-
-// 确保DICOM图像正确显示
-.viewerContainer {
-  // cornerstone.js 需要的样式
-  canvas {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: contain;
-    transition: all 0.3s ease;
-  }
-
-  // 确保图像居中显示
-  > div {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
   }
 }

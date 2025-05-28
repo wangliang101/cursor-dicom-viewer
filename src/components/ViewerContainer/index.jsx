@@ -5,7 +5,10 @@ import { DEFAULT_LAYOUT } from '../../constants';
 import styles from './index.module.less';
 
 const ViewerContainer = forwardRef(
-  ({ images, currentImageIndex, currentLayout = DEFAULT_LAYOUT, onLayoutChange }, ref) => {
+  (
+    { images, currentImageIndex, currentLayout = DEFAULT_LAYOUT, onLayoutChange, multiViewLayout },
+    ref
+  ) => {
     // 如果不是单窗格布局，使用MultiPaneViewer
     if (currentLayout !== '1x1') {
       return (
@@ -15,6 +18,7 @@ const ViewerContainer = forwardRef(
             currentImageIndex={currentImageIndex}
             layout={currentLayout}
             onLayoutChange={onLayoutChange}
+            multiViewLayout={multiViewLayout}
           />
         </div>
       );
@@ -25,7 +29,7 @@ const ViewerContainer = forwardRef(
       <div className={styles.viewerWrapper}>
         <Card className={styles.viewerCard} styles={{ body: { padding: 0 } }}>
           <div ref={ref} className={styles.viewerContainer}>
-            {images.length === 0 && (
+            {images.length === 0 ? (
               <div className={styles.placeholder}>
                 <div className={styles.placeholderContent}>
                   <div className={styles.placeholderIcon}>
@@ -67,7 +71,8 @@ const ViewerContainer = forwardRef(
                   </div>
                 </div>
               </div>
-            )}
+            ) : null}
+            {/* 当有图像时，Cornerstone的canvas会自动渲染到这个div中 */}
           </div>
 
           {images.length > 0 && (

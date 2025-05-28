@@ -1,5 +1,6 @@
 import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { Spin } from 'antd';
+import { Spin, Tag } from 'antd';
+import { VIEW_TYPES, VIEW_CONFIGS } from '../../constants';
 import styles from './ViewportPane.module.less';
 
 const ViewportPane = forwardRef(
@@ -13,6 +14,7 @@ const ViewportPane = forwardRef(
       imageIndex,
       images,
       style,
+      viewType = VIEW_TYPES.AXIAL,
       // 暂时注释掉未使用的props
       // toolGroupRef,
       // activeTool,
@@ -23,6 +25,9 @@ const ViewportPane = forwardRef(
     const viewportRef = useRef(null);
     const containerRef = useRef(null);
     const isInitialized = useRef(false);
+
+    // 获取视图配置
+    const viewConfig = VIEW_CONFIGS[viewType] || VIEW_CONFIGS[VIEW_TYPES.AXIAL];
 
     // 暴露viewport引用给父组件
     useImperativeHandle(ref, () => viewportRef.current, []);
@@ -35,24 +40,41 @@ const ViewportPane = forwardRef(
         try {
           // 这里应该初始化Cornerstone viewport
           // 由于需要与现有的Cornerstone集成，这里提供基本结构
-          console.log(`Initializing viewport for pane ${paneIndex}`);
+          console.log(`Initializing ${viewType} viewport for pane ${paneIndex}`);
 
-          // 模拟viewport对象
+          // 模拟viewport对象 - 根据视图类型进行不同的初始化
           const mockViewport = {
             element: containerRef.current,
             paneIndex,
-            render: () => console.log(`Rendering pane ${paneIndex}`),
-            resetCamera: () => console.log(`Reset camera for pane ${paneIndex}`),
-            setCamera: (camera) => console.log(`Set camera for pane ${paneIndex}`, camera),
+            viewType,
+            orientation: viewConfig.orientation,
+            render: () => console.log(`Rendering ${viewType} pane ${paneIndex}`),
+            resetCamera: () => console.log(`Reset camera for ${viewType} pane ${paneIndex}`),
+            setCamera: (camera) =>
+              console.log(`Set camera for ${viewType} pane ${paneIndex}`, camera),
             getCamera: () => ({ zoom: 1.0, pan: { x: 0, y: 0 } }),
-            setProperties: (props) => console.log(`Set properties for pane ${paneIndex}`, props),
+            setProperties: (props) =>
+              console.log(`Set properties for ${viewType} pane ${paneIndex}`, props),
+            // 不同视图类型的特殊方法
+            ...(viewType === VIEW_TYPES.VR && {
+              setVolumeRenderingProperties: (props) =>
+                console.log(`Set VR properties for pane ${paneIndex}`, props),
+              setTransferFunction: (tf) =>
+                console.log(`Set transfer function for pane ${paneIndex}`, tf),
+            }),
+            ...(viewType === VIEW_TYPES.MPR && {
+              setSliceOrientation: (orientation) =>
+                console.log(`Set MPR orientation for pane ${paneIndex}`, orientation),
+              setSlicePosition: (position) =>
+                console.log(`Set MPR position for pane ${paneIndex}`, position),
+            }),
           };
 
           viewportRef.current = mockViewport;
           onViewportRef?.(mockViewport);
           isInitialized.current = true;
         } catch (error) {
-          console.error(`Failed to initialize viewport for pane ${paneIndex}:`, error);
+          console.error(`Failed to initialize ${viewType} viewport for pane ${paneIndex}:`, error);
         }
       };
 
@@ -66,7 +88,7 @@ const ViewportPane = forwardRef(
           isInitialized.current = false;
         }
       };
-    }, [paneIndex, onViewportRef]);
+    }, [paneIndex, onViewportRef, viewType, viewConfig]);
 
     // 当图像数据改变时更新显示
     useEffect(() => {
@@ -126,6 +148,9 @@ const ViewportPane = forwardRef(
         {/* 窗格标识 */}
         <div className={styles.paneHeader}>
           <div className={styles.paneIndex}>{paneIndex + 1}</div>
+          <Tag color={viewConfig.color} className={styles.viewTypeTag}>
+            {viewConfig.name}
+          </Tag>
         </div>
 
         {/* 图像显示区域 */}

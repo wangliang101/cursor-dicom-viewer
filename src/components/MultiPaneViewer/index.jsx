@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Card } from 'antd';
 import ViewportPane from './ViewportPane';
-import { LAYOUT_CONFIGS, DEFAULT_LAYOUT } from '../../constants';
+import { LAYOUT_CONFIGS, DEFAULT_LAYOUT, VIEW_TYPES, MULTI_VIEW_LAYOUTS } from '../../constants';
 import styles from './index.module.less';
 
 const MultiPaneViewer = forwardRef(
@@ -14,13 +14,38 @@ const MultiPaneViewer = forwardRef(
       toolGroupRef,
       activeTool,
       onToolChange,
+      multiViewLayout = null,
     },
     ref
   ) => {
     const [currentLayout, setCurrentLayout] = useState(layout);
     const [activePane, setActivePane] = useState(0);
     const [paneImages, setPaneImages] = useState({});
+    const [paneViewTypes, setPaneViewTypes] = useState({});
     const viewportRefs = useRef({});
+
+    // 获取视图类型分配函数
+    const getViewTypesForLayout = (layoutKey, multiViewLayoutKey) => {
+      const config = LAYOUT_CONFIGS[layoutKey];
+      if (!config) return {};
+
+      const viewTypes = {};
+
+      // 如果指定了多视图布局，使用特定的视图分配
+      if (multiViewLayoutKey && MULTI_VIEW_LAYOUTS[multiViewLayoutKey]) {
+        const multiViewConfig = MULTI_VIEW_LAYOUTS[multiViewLayoutKey];
+        config.panes.forEach((pane, index) => {
+          viewTypes[index] = multiViewConfig.views[index] || VIEW_TYPES.AXIAL;
+        });
+      } else {
+        // 默认情况下所有窗格都是轴位视图
+        config.panes.forEach((pane, index) => {
+          viewTypes[index] = VIEW_TYPES.AXIAL;
+        });
+      }
+
+      return viewTypes;
+    };
 
     // 暴露给父组件的方法
     useImperativeHandle(
@@ -52,6 +77,8 @@ const MultiPaneViewer = forwardRef(
       if (!config) return;
 
       const newPaneImages = {};
+      const newPaneViewTypes = getViewTypesForLayout(currentLayout, multiViewLayout);
+
       config.panes.forEach((pane, index) => {
         // 为每个窗格分配图像，可以是同一图像或不同图像
         if (images.length > 0) {
@@ -65,6 +92,7 @@ const MultiPaneViewer = forwardRef(
       });
 
       setPaneImages(newPaneImages);
+      setPaneViewTypes(newPaneViewTypes);
 
       // 重置活动窗格为第一个窗格，确保多窗格切换时状态正确
       setActivePane(0);
@@ -78,7 +106,7 @@ const MultiPaneViewer = forwardRef(
       }, 100);
 
       return () => clearTimeout(timeoutId);
-    }, [currentLayout, images, currentImageIndex]);
+    }, [currentLayout, images, currentImageIndex, multiViewLayout]);
 
     // 监听layout prop的变化，确保外部布局变化能正确同步
     useEffect(() => {
@@ -141,6 +169,7 @@ const MultiPaneViewer = forwardRef(
                   toolGroupRef={toolGroupRef}
                   activeTool={activeTool}
                   onToolChange={onToolChange}
+                  viewType={paneViewTypes[index]}
                 />
               );
             })}

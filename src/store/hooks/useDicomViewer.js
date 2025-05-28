@@ -28,9 +28,14 @@ export const useDicomViewer = () => {
     prevImage,
     setIsPlaying,
     setFramesPerSecond,
+    removeCurrentImage,
+    removeImageByIndex,
+    clearAllImages,
 
     // 查看器状态
     resetViewerSettings,
+    multiViewLayout,
+    setMultiViewLayout,
 
     // 错误处理
     showSuccess,
@@ -127,6 +132,55 @@ export const useDicomViewer = () => {
     [totalImages, prevImage]
   );
 
+  // 删除相关的方法
+  const deleteCurrentImage = useCallback(
+    (viewport) => {
+      if (totalImages > 0) {
+        removeCurrentImage();
+        showSuccess('当前图像已删除');
+        // 如果还有图像，更新viewport
+        if (totalImages > 1 && viewport) {
+          const state = useDicomStore.getState();
+          if (state.totalImages > 0) {
+            viewport.setImageIdIndex(state.currentImageIndex);
+          }
+        }
+      }
+    },
+    [totalImages, removeCurrentImage, showSuccess]
+  );
+
+  const deleteImageByIndex = useCallback(
+    (index, viewport) => {
+      if (index >= 0 && index < totalImages) {
+        removeImageByIndex(index);
+        showSuccess(`图像 ${index + 1} 已删除`);
+        // 如果还有图像，更新viewport
+        const state = useDicomStore.getState();
+        if (state.totalImages > 0 && viewport) {
+          viewport.setImageIdIndex(state.currentImageIndex);
+        }
+      }
+    },
+    [totalImages, removeImageByIndex, showSuccess]
+  );
+
+  const clearAllImagesList = useCallback(
+    (viewport) => {
+      clearAllImages();
+      showSuccess('所有图像已清空');
+      // 清空viewport
+      if (viewport) {
+        try {
+          viewport.setStack([]);
+        } catch (error) {
+          console.warn('清空viewport失败:', error);
+        }
+      }
+    },
+    [clearAllImages, showSuccess]
+  );
+
   return {
     // 状态
     uploadModalVisible,
@@ -137,10 +191,12 @@ export const useDicomViewer = () => {
     totalImages,
     isPlaying,
     framesPerSecond,
+    multiViewLayout,
 
     // 基本操作
     setCurrentTool,
     setFramesPerSecond,
+    setMultiViewLayout,
     resetViewerSettings,
 
     // 封装的方法
@@ -154,6 +210,11 @@ export const useDicomViewer = () => {
     stopClip,
     goToNextFrame,
     goToPrevFrame,
+
+    // 删除功能
+    deleteCurrentImage,
+    deleteImageByIndex,
+    clearAllImagesList,
 
     // 消息方法
     showSuccess,

@@ -44,21 +44,28 @@ function Layout() {
     totalImages,
     isPlaying,
     framesPerSecond,
+    multiViewLayout,
 
     // 方法
     setCurrentTool,
     setFramesPerSecond,
+    setMultiViewLayout,
     resetViewerSettings,
     uploadFiles,
     closeUploadModal,
     openUploadModal,
-    closeTagsModal,
+    closeTagsModal: originalCloseTagsModal,
     openTagsModal,
     selectImage,
     playClip,
     stopClip,
     goToNextFrame,
     goToPrevFrame,
+
+    // 删除功能
+    deleteCurrentImage,
+    deleteImageByIndex,
+    clearAllImagesList,
   } = useDicomViewer();
 
   // 本地状态（仅保留与Cornerstone实例相关的状态）
@@ -69,6 +76,12 @@ function Layout() {
   const renderingEngineRef = useRef(null);
   const viewportRef = useRef(null);
   const toolGroupRef = useRef(null);
+
+  // 封装closeTagsModal以清空dicomTags
+  const closeTagsModal = () => {
+    setDicomTags(null); // 清空tags数据
+    originalCloseTagsModal();
+  };
 
   useEffect(() => {
     let isInitializing = false;
@@ -280,6 +293,18 @@ function Layout() {
     goToPrevFrame(viewportRef.current);
   };
 
+  const handleDeleteCurrent = () => {
+    deleteCurrentImage(viewportRef.current);
+  };
+
+  const handleDeleteByIndex = (index) => {
+    deleteImageByIndex(index, viewportRef.current);
+  };
+
+  const handleClearAll = () => {
+    clearAllImagesList(viewportRef.current);
+  };
+
   const handleShowSettings = () => {
     message.info('设置功能将在后续版本中实现');
   };
@@ -305,6 +330,8 @@ function Layout() {
         currentImageIndex={currentImageIndex}
         totalImages={totalImages}
         onShowSettings={handleShowSettings}
+        multiViewLayout={multiViewLayout}
+        onMultiViewLayoutChange={setMultiViewLayout}
         // SeriesPanel props
         images={images}
         onImageSelect={handleImageSelect}
@@ -312,6 +339,9 @@ function Layout() {
         framesPerSecond={framesPerSecond}
         onFpsChange={setFramesPerSecond}
         onShowTags={showDicomTagsForImage}
+        onDeleteCurrent={handleDeleteCurrent}
+        onDeleteByIndex={handleDeleteByIndex}
+        onClearAll={handleClearAll}
       />
 
       <UploadModal open={uploadModalVisible} onCancel={closeUploadModal} onUpload={uploadFiles} />

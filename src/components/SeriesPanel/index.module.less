@@ -221,6 +221,39 @@
   flex-shrink: 0;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.actionButton {
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  color: var(--error-color);
+  border: none;
+  box-shadow: none;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  flex-shrink: 0;
+
+  &:hover {
+    opacity: 1;
+    background: rgba(255, 77, 79, 0.1);
+    color: var(--error-color);
+  }
+
+  &:focus {
+    opacity: 1;
+    background: rgba(255, 77, 79, 0.1);
+    color: var(--error-color);
+  }
+}
+
 .sectionTitle {
   font-weight: 600;
   color: var(--text-color);
@@ -310,6 +343,50 @@
   width: 100%;
   min-height: 40px;
   padding: 0 4px;
+}
+
+.imageActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+
+  .imageItem:hover & {
+    opacity: 1;
+  }
+
+  .imageItem.selectedImage & {
+    opacity: 1;
+  }
+}
+
+.deleteButton {
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  color: var(--error-color);
+  border: none;
+  box-shadow: none;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  flex-shrink: 0;
+  font-size: 12px;
+
+  &:hover {
+    opacity: 1;
+    background: rgba(255, 77, 79, 0.1);
+    color: var(--error-color);
+  }
+
+  &:focus {
+    opacity: 1;
+    background: rgba(255, 77, 79, 0.1);
+    color: var(--error-color);
+  }
 }
 
 .imageIcon {
@@ -524,12 +601,12 @@
     .uploadSection {
       padding: 12px;
     }
-    
+
     .uploadIcon {
       font-size: 24px;
       margin-bottom: 8px;
     }
-    
+
     .uploadBtn {
       height: 36px;
       font-size: 13px;
@@ -565,11 +642,11 @@
 
   .playbackCard {
     margin-top: 8px;
-    
+
     .playbackControls {
       gap: 8px;
     }
-    
+
     .fpsControl {
       .fpsLabel {
         font-size: 11px;
@@ -580,16 +657,16 @@
 
   .emptyState {
     padding: 20px 16px;
-    
+
     .emptyIcon {
       font-size: 36px;
       margin-bottom: 12px;
     }
-    
+
     .emptyText {
       font-size: 13px;
     }
-    
+
     .emptySubText {
       font-size: 11px;
     }
@@ -599,7 +676,7 @@
 @media (max-width: 480px) {
   .seriesPanel {
     max-height: 30vh;
-    
+
     &.collapsed {
       height: 40px;
       max-height: 40px;

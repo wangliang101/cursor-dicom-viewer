@@ -1,0 +1,100 @@
+.multiViewButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .layoutText {
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .dropdownIcon {
+    font-size: 10px;
+    opacity: 0.7;
+    transition: transform 0.2s ease;
+  }
+
+  &.ant-btn-clicked .dropdownIcon,
+  &:focus .dropdownIcon {
+    transform: rotate(180deg);
+  }
+}
+
+.multiViewDropdown {
+  .ant-dropdown-menu {
+    min-width: 300px;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .ant-dropdown-menu-item {
+    padding: 12px 16px;
+
+    &:hover {
+      background: rgba(24, 144, 255, 0.06);
+    }
+  }
+}
+
+.layoutOption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.multiViewPreview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 80px;
+
+  .viewTag {
+    margin: 0;
+    font-size: 10px;
+    line-height: 16px;
+    padding: 0 4px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+}
+
+.layoutInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .layoutName {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.85);
+    line-height: 1.4;
+  }
+
+  .layoutDesc {
+    font-size: 11px;
+    color: rgba(0, 0, 0, 0.45);
+    line-height: 1.3;
+  }
+}

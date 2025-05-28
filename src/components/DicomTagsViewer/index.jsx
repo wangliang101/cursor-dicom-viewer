@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Table, Input } from 'antd';
 import TAG_DICT from './dicomTag';
 
@@ -6,6 +6,12 @@ const { Search } = Input;
 
 function DicomTagsViewer({ tags }) {
   const [searchText, setSearchText] = useState('');
+
+  useEffect(() => {
+    if (!tags) {
+      setSearchText('');
+    }
+  }, [tags]);
 
   const columns = [
     {

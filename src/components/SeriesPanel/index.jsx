@@ -1,10 +1,12 @@
-import { Button, List, Card, Divider, Badge, Tooltip } from 'antd';
+import { Button, List, Card, Divider, Badge, Tooltip, Popconfirm } from 'antd';
 import {
   LeftOutlined,
   RightOutlined,
   UploadOutlined,
   FileImageOutlined,
   TagsOutlined,
+  DeleteOutlined,
+  ClearOutlined,
 } from '@ant-design/icons';
 import styles from './index.module.less';
 
@@ -16,6 +18,9 @@ const SeriesPanel = ({
   onImageSelect,
   onUpload,
   onShowTags,
+  onDeleteCurrent,
+  onDeleteByIndex,
+  onClearAll,
 }) => {
   return (
     <div className={`${styles.seriesPanel} ${isCollapsed ? styles.collapsed : ''}`}>
@@ -42,9 +47,45 @@ const SeriesPanel = ({
             <div className={styles.sectionHeader}>
               <span className={styles.sectionTitle}>图像列表</span>
               {images.length > 0 && (
-                <span className={styles.imageCount}>
-                  {currentImageIndex + 1} / {images.length}
-                </span>
+                <div className={styles.headerActions}>
+                  <span className={styles.imageCount}>
+                    {currentImageIndex + 1} / {images.length}
+                  </span>
+                  <Popconfirm
+                    title="确认删除"
+                    description="确定要删除当前图像吗？"
+                    onConfirm={() => onDeleteCurrent && onDeleteCurrent()}
+                    okText="确定"
+                    cancelText="取消"
+                  >
+                    <Tooltip title="删除当前图像">
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<DeleteOutlined />}
+                        className={styles.actionButton}
+                        danger
+                      />
+                    </Tooltip>
+                  </Popconfirm>
+                  <Popconfirm
+                    title="确认清空"
+                    description="确定要清空所有图像吗？"
+                    onConfirm={() => onClearAll && onClearAll()}
+                    okText="确定"
+                    cancelText="取消"
+                  >
+                    <Tooltip title="清空所有图像">
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<ClearOutlined />}
+                        className={styles.actionButton}
+                        danger
+                      />
+                    </Tooltip>
+                  </Popconfirm>
+                </div>
               )}
             </div>
 
@@ -67,19 +108,44 @@ const SeriesPanel = ({
                           index === currentImageIndex ? styles.visible : styles.hidden
                         }`}
                       />
-                      {/* 查看Tag按钮 */}
-                      <Tooltip title="查看 DICOM Tags">
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<TagsOutlined />}
-                          className={styles.tagButton}
-                          onClick={(e) => {
-                            e.stopPropagation(); // 阻止事件冒泡，避免触发图像选择
-                            onShowTags && onShowTags(index);
+                      <div className={styles.imageActions}>
+                        {/* 查看Tag按钮 */}
+                        <Tooltip title="查看 DICOM Tags">
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<TagsOutlined />}
+                            className={styles.tagButton}
+                            onClick={(e) => {
+                              e.stopPropagation(); // 阻止事件冒泡，避免触发图像选择
+                              onShowTags && onShowTags(index);
+                            }}
+                          />
+                        </Tooltip>
+                        {/* 删除按钮 */}
+                        <Popconfirm
+                          title="确认删除"
+                          description={`确定要删除图像 ${index + 1} 吗？`}
+                          onConfirm={(e) => {
+                            e?.stopPropagation?.();
+                            onDeleteByIndex && onDeleteByIndex(index);
                           }}
-                        />
-                      </Tooltip>
+                          okText="确定"
+                          cancelText="取消"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Tooltip title="删除此图像">
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<DeleteOutlined />}
+                              className={styles.deleteButton}
+                              danger
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </Tooltip>
+                        </Popconfirm>
+                      </div>
                     </div>
                   </List.Item>
                 )}

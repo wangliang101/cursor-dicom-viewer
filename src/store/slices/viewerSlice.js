@@ -13,6 +13,9 @@ export const createViewerSlice = (set) => ({
     contrast: 0,
   },
 
+  // 多视图布局设置
+  multiViewLayout: null, // 当前多视图布局类型
+
   // 工具设置
   toolSettings: {
     windowLevel: {
@@ -126,6 +129,16 @@ export const createViewerSlice = (set) => ({
       }),
       false,
       'updateToolSettings'
+    ),
+
+  // 多视图布局操作
+  setMultiViewLayout: (layout) =>
+    set(
+      () => ({
+        multiViewLayout: layout,
+      }),
+      false,
+      'setMultiViewLayout'
     ),
 
   // 预设操作

@@ -25,6 +25,8 @@ const MainLayout = ({
   currentImageIndex,
   totalImages,
   onShowSettings,
+  multiViewLayout,
+  onMultiViewLayoutChange,
 
   // SeriesPanel props
   images,
@@ -33,6 +35,9 @@ const MainLayout = ({
   framesPerSecond,
   onFpsChange,
   onShowTags,
+  onDeleteCurrent,
+  onDeleteByIndex,
+  onClearAll,
 }) => {
   const [isSeriesPanelCollapsed, setIsSeriesPanelCollapsed] = useState(false);
   const [isControlPanelCollapsed, setIsControlPanelCollapsed] = useState(true); // 默认隐藏
@@ -107,6 +112,8 @@ const MainLayout = ({
         onLayoutChange={handleLayoutChange}
         framesPerSecond={framesPerSecond}
         onFpsChange={onFpsChange}
+        multiViewLayout={multiViewLayout}
+        onMultiViewLayoutChange={onMultiViewLayoutChange}
       />
 
       {/* 主体内容区域 */}
@@ -125,6 +132,9 @@ const MainLayout = ({
           onPlay={onPlay}
           onStop={onStop}
           onShowTags={onShowTags}
+          onDeleteCurrent={onDeleteCurrent}
+          onDeleteByIndex={onDeleteByIndex}
+          onClearAll={onClearAll}
         />
 
         {/* 中央查看器 */}
@@ -134,6 +144,7 @@ const MainLayout = ({
           currentImageIndex={currentImageIndex}
           currentLayout={currentLayout}
           onLayoutChange={handleLayoutChange}
+          multiViewLayout={multiViewLayout}
         />
 
         {/* 右侧操控区 */}

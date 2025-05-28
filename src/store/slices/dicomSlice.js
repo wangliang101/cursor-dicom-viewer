@@ -130,6 +130,79 @@ export const createDicomSlice = (set, get) => ({
       'setFramesPerSecond'
     ),
 
+  // 新增：删除当前图像功能
+  removeCurrentImage: () =>
+    set(
+      (state) => {
+        if (state.totalImages === 0) return state;
+
+        const newImages = state.images.filter((_, index) => index !== state.currentImageIndex);
+        const newTotalImages = newImages.length;
+
+        // 调整当前图像索引
+        let newCurrentIndex = state.currentImageIndex;
+        if (newCurrentIndex >= newTotalImages && newTotalImages > 0) {
+          newCurrentIndex = newTotalImages - 1;
+        } else if (newTotalImages === 0) {
+          newCurrentIndex = 0;
+        }
+
+        return {
+          images: newImages,
+          totalImages: newTotalImages,
+          currentImageIndex: newCurrentIndex,
+          isPlaying: newTotalImages <= 1 ? false : state.isPlaying,
+        };
+      },
+      false,
+      'removeCurrentImage'
+    ),
+
+  // 新增：删除指定索引的图像
+  removeImageByIndex: (index) =>
+    set(
+      (state) => {
+        if (index < 0 || index >= state.totalImages) return state;
+
+        const newImages = state.images.filter((_, i) => i !== index);
+        const newTotalImages = newImages.length;
+
+        // 调整当前图像索引
+        let newCurrentIndex = state.currentImageIndex;
+        if (index < state.currentImageIndex) {
+          newCurrentIndex = state.currentImageIndex - 1;
+        } else if (index === state.currentImageIndex) {
+          if (newCurrentIndex >= newTotalImages && newTotalImages > 0) {
+            newCurrentIndex = newTotalImages - 1;
+          } else if (newTotalImages === 0) {
+            newCurrentIndex = 0;
+          }
+        }
+
+        return {
+          images: newImages,
+          totalImages: newTotalImages,
+          currentImageIndex: newCurrentIndex,
+          isPlaying: newTotalImages <= 1 ? false : state.isPlaying,
+        };
+      },
+      false,
+      'removeImageByIndex'
+    ),
+
+  // 新增：清空所有图像
+  clearAllImages: () =>
+    set(
+      () => ({
+        images: [],
+        totalImages: 0,
+        currentImageIndex: 0,
+        isPlaying: false,
+      }),
+      false,
+      'clearAllImages'
+    ),
+
   // 复合操作
   loadDicomFile: async (file) => {
     const { setLoading, setError, setCurrentDicomFile, addDicomFile } = get();

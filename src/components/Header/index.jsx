@@ -26,6 +26,8 @@ const Header = ({
   onLayoutChange,
   framesPerSecond,
   onFpsChange,
+  multiViewLayout,
+  onMultiViewLayoutChange,
 }) => {
   return (
     <div className={styles.header}>
@@ -76,6 +78,8 @@ const Header = ({
             onLayoutChange={onLayoutChange}
             framesPerSecond={framesPerSecond}
             onFpsChange={onFpsChange}
+            currentMultiViewLayout={multiViewLayout}
+            onMultiViewLayoutChange={onMultiViewLayoutChange}
           />
         </div>
       </div>

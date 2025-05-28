@@ -50,6 +50,7 @@ import {
   addTool,
 } from '@cornerstonejs/tools';
 import LayoutSelector from '../MultiPaneViewer/LayoutSelector';
+import MultiViewLayoutSelector from '../MultiPaneViewer/MultiViewLayoutSelector';
 import { WINDOW_PRESETS, DEFAULT_SETTINGS } from '../../constants';
 import styles from './index.module.less';
 
@@ -79,6 +80,8 @@ const DicomToolbar = ({
   onLayoutChange,
   framesPerSecond = 24,
   onFpsChange,
+  currentMultiViewLayout,
+  onMultiViewLayoutChange,
 }) => {
   const [windowWidth, setWindowWidth] = useState(DEFAULT_SETTINGS.WINDOW_WIDTH);
   const [windowCenter, setWindowCenter] = useState(DEFAULT_SETTINGS.WINDOW_CENTER);
@@ -509,6 +512,13 @@ const DicomToolbar = ({
       {/* 布局选择器 */}
       <Space size="small">
         <LayoutSelector currentLayout={currentLayout} onLayoutChange={onLayoutChange} />
+        {/* 只在非单窗格布局时显示多视图选择器 */}
+        {currentLayout !== '1x1' && (
+          <MultiViewLayoutSelector
+            currentMultiViewLayout={currentMultiViewLayout}
+            onMultiViewLayoutChange={onMultiViewLayoutChange}
+          />
+        )}
       </Space>
 
       <Divider type="vertical" />
