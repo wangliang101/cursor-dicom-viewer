@@ -1,222 +1,205 @@
 .viewportPane {
   position: relative;
-  background: #1a1a1a;
-  border: 2px solid transparent;
-  border-radius: 4px;
+  border: 1px solid #e8ecf0;
+  border-radius: 8px;
   overflow: hidden;
-  cursor: pointer;
+  background: #000000;
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
+  min-height: 200px;
 
   &:hover {
-    border-color: #40a9ff;
+    border-color: #1890ff;
+    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2);
   }
 
   &.active {
     border-color: #1890ff;
-    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    border-width: 2px;
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
   }
 }
 
-.paneHeader {
+.viewportHeader {
   position: absolute;
-  top: 4px;
-  left: 4px;
+  top: 8px;
+  left: 8px;
   z-index: 10;
   display: flex;
   align-items: center;
   gap: 8px;
+  pointer-events: none;
 }
 
-.paneIndex {
-  background: rgba(0, 0, 0, 0.7);
-  color: #fff;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 12px;
-  font-weight: 500;
-  min-width: 20px;
-  text-align: center;
-}
-
-.viewTypeTag {
-  background: rgba(0, 0, 0, 0.7) !important;
-  border: none !important;
-  font-size: 10px !important;
-  font-weight: 500 !important;
-  line-height: 16px !important;
-  padding: 0 4px !important;
-  border-radius: 3px !important;
-  margin: 0 !important;
-}
-
-.activeIndicator {
-  background: #1890ff;
-  color: #fff;
-  padding: 2px 6px;
-  border-radius: 3px;
+.viewportTag {
+  pointer-events: auto;
   font-size: 11px;
   font-weight: 500;
+  border-radius: 4px;
+  padding: 2px 6px;
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  color: #ffffff;
+
+  .viewportPane.active & {
+    background: rgba(24, 144, 255, 0.8);
+    color: #ffffff;
+  }
 }
 
-.imageContainer {
+.viewportContainer {
   flex: 1;
   position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 150px;
+  background: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
-}
 
-.viewport {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  background: #000;
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  > div:not(.placeholder) {
+    width: 100% !important;
+    height: 100% !important;
+    position: relative;
+  }
 }
 
 .placeholder {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #2a2a2a;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  color: #8c8c8c;
 }
 
 .placeholderContent {
   text-align: center;
-  color: #666;
+  padding: 16px;
 }
 
 .placeholderIcon {
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   display: flex;
   justify-content: center;
+  opacity: 0.6;
 }
 
 .placeholderText {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
+  color: #ffffff;
   margin-bottom: 4px;
-  color: #999;
 }
 
 .placeholderSubtext {
-  font-size: 12px;
-  color: #666;
+  font-size: 10px;
+  color: #8c8c8c;
+  opacity: 0.8;
 }
 
-.imageWrapper {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.loadingOverlay {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  color: #999;
-  font-size: 12px;
-}
-
-.paneInfo {
+.viewportInfo {
   position: absolute;
-  bottom: 4px;
-  left: 4px;
-  right: 4px;
+  bottom: 8px;
+  right: 8px;
   z-index: 10;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.imageInfo {
   background: rgba(0, 0, 0, 0.7);
-  color: #fff;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 11px;
-}
-
-// 新增样式
-.mockImageContent {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-}
-
-.viewTypeIndicator {
-  position: absolute;
-  top: 50px;
-  left: 8px;
-  z-index: 5;
-  background: rgba(0, 0, 0, 0.8);
-  color: #fff;
-  padding: 6px 10px;
+  backdrop-filter: blur(4px);
   border-radius: 4px;
+  padding: 4px 8px;
+  pointer-events: none;
+}
 
-  span {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 2px;
+.imageCounter {
+  font-size: 11px;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .viewportPane {
+    min-height: 120px;
+    border-radius: 6px;
   }
 
-  small {
-    display: block;
+  .viewportHeader {
+    top: 4px;
+    left: 4px;
+  }
+
+  .viewportTag {
     font-size: 10px;
-    opacity: 0.8;
-    line-height: 1.2;
+    padding: 1px 4px;
+  }
+
+  .viewportContainer {
+    min-height: 100px;
+  }
+
+  .placeholderContent {
+    padding: 8px;
+    transform: scale(0.9);
+  }
+
+  .placeholderText {
+    font-size: 11px;
+  }
+
+  .placeholderSubtext {
+    font-size: 9px;
+  }
+
+  .viewportInfo {
+    bottom: 4px;
+    right: 4px;
+    padding: 2px 6px;
+  }
+
+  .imageCounter {
+    font-size: 10px;
   }
 }
 
-.mockImage {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #1a1a1a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  margin: 4px;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-      45deg,
-      transparent 48%,
-      rgba(255, 255, 255, 0.02) 49%,
-      rgba(255, 255, 255, 0.02) 51%,
-      transparent 52%
-    );
-    background-size: 20px 20px;
+@media (max-width: 480px) {
+  .viewportPane {
+    min-height: 80px;
+    border-radius: 4px;
   }
-}
 
-.imageCenter {
-  text-align: center;
-  z-index: 2;
-  position: relative;
+  .viewportContainer {
+    min-height: 60px;
+  }
 
-  span {
-    font-size: 16px;
-    font-weight: 600;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-    opacity: 0.8;
+  .placeholderContent {
+    padding: 4px;
+    transform: scale(0.8);
+  }
+
+  .viewportTag {
+    font-size: 9px;
+  }
+
+  .placeholderText {
+    font-size: 10px;
+  }
+
+  .placeholderSubtext {
+    display: none;
   }
 }

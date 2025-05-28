@@ -124,35 +124,40 @@ function Layout() {
 
   // 当布局改变时，重新配置视口
   useEffect(() => {
-    if (!isInitialized || !renderingEngineRef.current) return;
+    if (!isInitialized) return;
 
     const setupViewportsForLayout = async () => {
       try {
         console.log(`重新配置视口以适应布局: ${currentLayout}`);
 
-        // 清理现有视口
-        Object.keys(viewportsRef.current).forEach((viewportId) => {
-          try {
-            renderingEngineRef.current.disableElement(viewportId);
-          } catch (error) {
-            console.warn(`清理视口 ${viewportId} 时出错:`, error);
-          }
-        });
-        viewportsRef.current = {};
-
-        // 清理现有工具组
-        if (toolGroupRef.current) {
-          try {
-            ToolGroupManager.destroyToolGroup('myToolGroup');
-          } catch (error) {
-            console.warn('清理工具组时出错:', error);
-          }
-          toolGroupRef.current = null;
-        }
-
-        // 根据布局创建视口
+        // 根据布局类型决定处理方式
         if (currentLayout === '1x1') {
-          // 单窗格布局
+          // 单窗格布局 - 确保有渲染引擎实例
+          if (!renderingEngineRef.current) {
+            renderingEngineRef.current = new RenderingEngine(renderingEngineId);
+          }
+
+          // 清理现有视口
+          Object.keys(viewportsRef.current).forEach((viewportId) => {
+            try {
+              renderingEngineRef.current.disableElement(viewportId);
+            } catch (error) {
+              console.warn(`清理视口 ${viewportId} 时出错:`, error);
+            }
+          });
+          viewportsRef.current = {};
+
+          // 清理现有工具组
+          if (toolGroupRef.current) {
+            try {
+              ToolGroupManager.destroyToolGroup('myToolGroup');
+            } catch (error) {
+              console.warn('清理工具组时出错:', error);
+            }
+            toolGroupRef.current = null;
+          }
+
+          // 创建单视口
           const element = viewerRef.current;
           if (element) {
             const viewportId = 'CT_AXIAL_STACK';
@@ -174,10 +179,31 @@ function Layout() {
             }
           }
         } else {
-          // 多窗格布局 - 目前暂时跳过实际的Cornerstone初始化
-          // 等待MultiPaneViewer组件完善后再集成
-          console.log('多窗格布局将由MultiPaneViewer组件处理');
-          // TODO: 为MultiPaneViewer提供Cornerstone引擎实例
+          // 多窗格布局 - 清理单视口资源，MultiPaneViewer将创建自己的引擎
+          if (renderingEngineRef.current) {
+            // 清理现有单视口
+            Object.keys(viewportsRef.current).forEach((viewportId) => {
+              try {
+                renderingEngineRef.current.disableElement(viewportId);
+              } catch (error) {
+                console.warn(`清理单视口 ${viewportId} 时出错:`, error);
+              }
+            });
+            viewportsRef.current = {};
+
+            // 清理工具组
+            if (toolGroupRef.current) {
+              try {
+                ToolGroupManager.destroyToolGroup('myToolGroup');
+              } catch (error) {
+                console.warn('清理单视口工具组时出错:', error);
+              }
+              toolGroupRef.current = null;
+            }
+
+            // 不销毁引擎，只是清理引用，让MultiPaneViewer使用自己的引擎
+            console.log('单视口资源已清理，多窗格布局将使用独立的渲染引擎');
+          }
         }
 
         console.log(`视口配置完成，当前布局: ${currentLayout}`);
@@ -208,28 +234,34 @@ function Layout() {
         toolGroup.addViewport(viewportId);
       });
 
-      toolGroup.setToolActive(WindowLevelTool.toolName, {
-        bindings: [
-          {
-            mouseButton: csToolsEnums.MouseBindings.Primary,
-          },
-        ],
-      });
+      // 只有在有图像时才激活工具，避免在空视口上激活工具
+      if (images.length > 0) {
+        toolGroup.setToolActive(WindowLevelTool.toolName, {
+          bindings: [
+            {
+              mouseButton: csToolsEnums.MouseBindings.Primary,
+            },
+          ],
+        });
 
-      toolGroup.setToolActive(PanTool.toolName, {
-        bindings: [{ mouseButton: csToolsEnums.MouseBindings.Auxiliary }],
-      });
-      toolGroup.setToolActive(StackScrollTool.toolName, {
-        bindings: [{ mouseButton: csToolsEnums.MouseBindings.Wheel }],
-      });
+        toolGroup.setToolActive(PanTool.toolName, {
+          bindings: [{ mouseButton: csToolsEnums.MouseBindings.Auxiliary }],
+        });
+        toolGroup.setToolActive(StackScrollTool.toolName, {
+          bindings: [{ mouseButton: csToolsEnums.MouseBindings.Wheel }],
+        });
 
-      toolGroup.setToolActive(ZoomTool.toolName, {
-        bindings: [
-          {
-            mouseButton: csToolsEnums.MouseBindings.Secondary,
-          },
-        ],
-      });
+        toolGroup.setToolActive(ZoomTool.toolName, {
+          bindings: [
+            {
+              mouseButton: csToolsEnums.MouseBindings.Secondary,
+            },
+          ],
+        });
+      } else {
+        // 没有图像时，设置工具为被动状态
+        console.log('没有图像，暂不激活工具');
+      }
     }
   };
 
@@ -241,6 +273,33 @@ function Layout() {
         console.log('图像堆栈设置完成');
         viewportsRef.current[viewportId].render();
         console.log('图像渲染完成');
+
+        // 图像加载完成后，激活工具
+        if (toolGroupRef.current && currentLayout === '1x1') {
+          console.log('图像加载完成，激活工具');
+          toolGroupRef.current.setToolActive(WindowLevelTool.toolName, {
+            bindings: [
+              {
+                mouseButton: csToolsEnums.MouseBindings.Primary,
+              },
+            ],
+          });
+
+          toolGroupRef.current.setToolActive(PanTool.toolName, {
+            bindings: [{ mouseButton: csToolsEnums.MouseBindings.Auxiliary }],
+          });
+          toolGroupRef.current.setToolActive(StackScrollTool.toolName, {
+            bindings: [{ mouseButton: csToolsEnums.MouseBindings.Wheel }],
+          });
+
+          toolGroupRef.current.setToolActive(ZoomTool.toolName, {
+            bindings: [
+              {
+                mouseButton: csToolsEnums.MouseBindings.Secondary,
+              },
+            ],
+          });
+        }
       } catch (error) {
         console.error('加载或显示图像时出错:', error);
       }

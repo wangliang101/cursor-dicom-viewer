@@ -6,16 +6,7 @@ import styles from './index.module.less';
 
 const ViewerContainer = forwardRef(
   (
-    {
-      images,
-      currentImageIndex,
-      currentLayout = DEFAULT_LAYOUT,
-      onLayoutChange,
-      multiViewLayout,
-      toolGroupRef,
-      activeTool,
-      onToolChange,
-    },
+    { images, currentImageIndex, currentLayout = DEFAULT_LAYOUT, onLayoutChange, multiViewLayout },
     ref
   ) => {
     console.log('ViewerContainer 渲染 - 当前布局:', currentLayout);
@@ -30,9 +21,6 @@ const ViewerContainer = forwardRef(
             layout={currentLayout}
             onLayoutChange={onLayoutChange}
             multiViewLayout={multiViewLayout}
-            toolGroupRef={toolGroupRef}
-            activeTool={activeTool}
-            onToolChange={onToolChange}
           />
         </div>
       );

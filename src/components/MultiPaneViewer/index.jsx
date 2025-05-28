@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 're
 import { Card } from 'antd';
 import ViewportPane from './ViewportPane';
 import { LAYOUT_CONFIGS, DEFAULT_LAYOUT, VIEW_TYPES, MULTI_VIEW_LAYOUTS } from '../../constants';
+import { getMultiViewportService } from '../../services/MultiViewportService';
 import styles from './index.module.less';
 
 const MultiPaneViewer = forwardRef(
@@ -11,10 +12,8 @@ const MultiPaneViewer = forwardRef(
       currentImageIndex = 0,
       layout = DEFAULT_LAYOUT,
       onLayoutChange,
-      toolGroupRef,
-      activeTool,
-      onToolChange,
       multiViewLayout = null,
+      renderingEngineId = 'multiViewRenderingEngine',
     },
     ref
   ) => {
@@ -22,7 +21,9 @@ const MultiPaneViewer = forwardRef(
     const [activePane, setActivePane] = useState(0);
     const [paneImages, setPaneImages] = useState({});
     const [paneViewTypes, setPaneViewTypes] = useState({});
+    const [isInitializing, setIsInitializing] = useState(false);
     const viewportRefs = useRef({});
+    const multiViewportService = getMultiViewportService(renderingEngineId);
 
     // 获取视图类型分配函数
     const getViewTypesForLayout = (layoutKey, multiViewLayoutKey) => {
@@ -64,8 +65,11 @@ const MultiPaneViewer = forwardRef(
     useImperativeHandle(
       ref,
       () => ({
-        getActiveViewport: () => viewportRefs.current[activePane],
-        getAllViewports: () => viewportRefs.current,
+        getActiveViewport: () => {
+          const activeViewportId = `viewport_pane_${activePane}_${paneViewTypes[activePane]}`;
+          return multiViewportService.getViewport(activeViewportId);
+        },
+        getAllViewports: () => multiViewportService.getAllViewports(),
         setLayout: (newLayout) => {
           setCurrentLayout(newLayout);
           onLayoutChange?.(newLayout);
@@ -73,60 +77,95 @@ const MultiPaneViewer = forwardRef(
         setActivePane: (paneIndex) => setActivePane(paneIndex),
         getActivePane: () => activePane,
         resetAllViewports: () => {
-          Object.values(viewportRefs.current).forEach((viewport) => {
-            if (viewport?.resetCamera) {
-              viewport.resetCamera();
-              viewport.render();
-            }
-          });
+          multiViewportService.resetAllCameras();
+        },
+        // 新增方法
+        loadImages: async (imageIds, imageIndex = 0) => {
+          await multiViewportService.loadImageStackToAllViewports(imageIds, imageIndex);
+        },
+        createToolGroup: async (viewportIds) => {
+          await multiViewportService.createToolGroup(viewportIds, 'multiViewToolGroup', false);
         },
       }),
-      [activePane, onLayoutChange]
+      [activePane, onLayoutChange, paneViewTypes, multiViewportService]
     );
 
-    // 当布局改变时，重新分配图像
+    // 当布局改变时，重新分配图像和配置视口
     useEffect(() => {
-      const config = LAYOUT_CONFIGS[currentLayout];
-      if (!config) return;
+      const setupLayout = async () => {
+        setIsInitializing(true);
 
-      const newPaneImages = {};
-      const newPaneViewTypes = getViewTypesForLayout(currentLayout, multiViewLayout);
+        try {
+          const config = LAYOUT_CONFIGS[currentLayout];
+          if (!config) return;
 
-      config.panes.forEach((pane, index) => {
-        // 为每个窗格分配图像，可以是同一图像或不同图像
-        if (images.length > 0) {
-          // 默认情况下，所有窗格显示当前选中的图像
-          // 后续可以扩展为每个窗格显示不同的图像
-          newPaneImages[index] = {
-            imageData: images[currentImageIndex] || images[0],
-            imageIndex: currentImageIndex < images.length ? currentImageIndex : 0,
-          };
+          const newPaneImages = {};
+          const newPaneViewTypes = getViewTypesForLayout(currentLayout, multiViewLayout);
+
+          config.panes.forEach((pane, index) => {
+            // 为每个窗格分配图像，可以是同一图像或不同图像
+            if (images.length > 0) {
+              // 默认情况下，所有窗格显示当前选中的图像
+              // 后续可以扩展为每个窗格显示不同的图像
+              newPaneImages[index] = {
+                imageIndex: currentImageIndex < images.length ? currentImageIndex : 0,
+              };
+            }
+          });
+
+          setPaneImages(newPaneImages);
+          setPaneViewTypes(newPaneViewTypes);
+
+          // 重置活动窗格为第一个窗格
+          setActivePane(0);
+
+          // 清理旧的viewport引用
+          viewportRefs.current = {};
+
+          console.log(`多视口布局切换到: ${currentLayout}，包含 ${config.panes.length} 个窗格`);
+        } catch (error) {
+          console.error('设置布局失败:', error);
+        } finally {
+          setIsInitializing(false);
         }
-      });
+      };
 
-      setPaneImages(newPaneImages);
-      setPaneViewTypes(newPaneViewTypes);
-
-      // 重置活动窗格为第一个窗格，确保多窗格切换时状态正确
-      setActivePane(0);
-
-      // 清理旧的viewport引用，强制重新创建
-      viewportRefs.current = {};
-
-      // 延迟触发布局变化通知，确保DOM更新完成
-      const timeoutId = setTimeout(() => {
-        console.log(`Layout switched to: ${currentLayout} with ${config.panes.length} panes`);
-      }, 100);
-
-      return () => clearTimeout(timeoutId);
+      setupLayout();
     }, [currentLayout, images, currentImageIndex, multiViewLayout]);
 
-    // 监听layout prop的变化，确保外部布局变化能正确同步
+    // 监听layout prop的变化
     useEffect(() => {
       if (layout !== currentLayout) {
         setCurrentLayout(layout);
       }
     }, [layout, currentLayout]);
+
+    // 当所有视口初始化完成后，创建工具组
+    useEffect(() => {
+      if (!isInitializing && Object.keys(paneViewTypes).length > 0) {
+        // 延迟初始化工具组，确保所有视口都已创建
+        const timer = setTimeout(async () => {
+          try {
+            const config = LAYOUT_CONFIGS[currentLayout];
+            if (!config) return;
+
+            // 为所有窗格创建视口ID列表
+            const viewportIds = config.panes.map((pane, index) => {
+              const viewType = paneViewTypes[index] || VIEW_TYPES.AXIAL;
+              return `viewport_pane_${index}_${viewType}`;
+            });
+
+            // 创建工具组
+            await multiViewportService.createToolGroup(viewportIds, 'multiViewToolGroup', false);
+            console.log('多视口工具组创建完成');
+          } catch (error) {
+            console.error('创建工具组失败:', error);
+          }
+        }, 500);
+
+        return () => clearTimeout(timer);
+      }
+    }, [isInitializing, paneViewTypes, currentLayout, multiViewportService]);
 
     // 处理窗格点击，设置为活动窗格
     const handlePaneClick = (paneIndex) => {
@@ -144,7 +183,7 @@ const MultiPaneViewer = forwardRef(
 
     const config = LAYOUT_CONFIGS[currentLayout];
     if (!config) {
-      console.warn(`Unknown layout: ${currentLayout}`);
+      console.warn(`未知布局: ${currentLayout}`);
       return null;
     }
 
@@ -175,14 +214,11 @@ const MultiPaneViewer = forwardRef(
                   isActive={activePane === index}
                   onClick={() => handlePaneClick(index)}
                   onViewportRef={(viewport) => handleViewportRef(index, viewport)}
-                  imageData={paneImages[index]?.imageData}
                   imageIndex={paneImages[index]?.imageIndex}
                   images={images}
                   style={paneStyle}
-                  toolGroupRef={toolGroupRef}
-                  activeTool={activeTool}
-                  onToolChange={onToolChange}
                   viewType={paneViewTypes[index]}
+                  renderingEngineId={renderingEngineId}
                 />
               );
             })}
@@ -199,6 +235,7 @@ const MultiPaneViewer = forwardRef(
                   | {currentImageIndex + 1} / {images.length}
                 </span>
               )}
+              <span className={styles.activePane}>| 活动窗格: {activePane + 1}</span>
             </div>
           </div>
         </Card>

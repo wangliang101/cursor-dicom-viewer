@@ -148,9 +148,6 @@ const MainLayout = ({
           currentLayout={currentLayout}
           onLayoutChange={handleLayoutChange}
           multiViewLayout={multiViewLayout}
-          toolGroupRef={toolGroupRef}
-          activeTool={activeTool}
-          onToolChange={onToolChange}
         />
 
         {/* 右侧操控区 */}
