@@ -74,14 +74,14 @@ const LayoutSelector = ({ currentLayout = DEFAULT_LAYOUT, onLayoutChange, disabl
       placement="bottomLeft"
       overlayClassName={styles.layoutDropdown}
     >
-      <Tooltip title="切换布局" placement="bottom">
+      <Tooltip title="切换窗格布局 (窗格数量和排列方式)" placement="bottom">
         <Button
           type="text"
           icon={<AppstoreOutlined />}
           className={styles.layoutButton}
           disabled={disabled}
         >
-          <span className={styles.layoutText}>{currentConfig?.name || '布局'}</span>
+          <span className={styles.layoutText}>{currentConfig?.name || '窗格布局'}</span>
           <DownOutlined className={styles.dropdownIcon} />
         </Button>
       </Tooltip>

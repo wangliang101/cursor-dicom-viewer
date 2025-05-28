@@ -31,12 +31,25 @@ const MultiPaneViewer = forwardRef(
 
       const viewTypes = {};
 
-      // 如果指定了多视图布局，使用特定的视图分配
+      // 如果指定了多视图布局，检查兼容性并使用特定的视图分配
       if (multiViewLayoutKey && MULTI_VIEW_LAYOUTS[multiViewLayoutKey]) {
         const multiViewConfig = MULTI_VIEW_LAYOUTS[multiViewLayoutKey];
-        config.panes.forEach((pane, index) => {
-          viewTypes[index] = multiViewConfig.views[index] || VIEW_TYPES.AXIAL;
-        });
+
+        // 检查视图数量是否超过窗格数量
+        if (multiViewConfig.views.length > config.panes.length) {
+          console.warn(
+            `多视图布局 "${multiViewConfig.name}" 需要 ${multiViewConfig.views.length} 个窗格，` +
+              `但当前布局 "${config.name}" 只有 ${config.panes.length} 个窗格。回退到默认单一视图。`
+          );
+          // 回退到默认的轴位视图
+          config.panes.forEach((pane, index) => {
+            viewTypes[index] = VIEW_TYPES.AXIAL;
+          });
+        } else {
+          config.panes.forEach((pane, index) => {
+            viewTypes[index] = multiViewConfig.views[index] || VIEW_TYPES.AXIAL;
+          });
+        }
       } else {
         // 默认情况下所有窗格都是轴位视图
         config.panes.forEach((pane, index) => {

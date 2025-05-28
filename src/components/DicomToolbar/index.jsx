@@ -512,11 +512,13 @@ const DicomToolbar = ({
       {/* 布局选择器 */}
       <Space size="small">
         <LayoutSelector currentLayout={currentLayout} onLayoutChange={onLayoutChange} />
-        {/* 只在非单窗格布局时显示多视图选择器 */}
+        {/* 优化：将多视图选择器放在布局选择器内部，或者重新组织UI */}
+        {/* 建议方案1：只在多窗格时显示，并改进提示文字 */}
         {currentLayout !== '1x1' && (
           <MultiViewLayoutSelector
             currentMultiViewLayout={currentMultiViewLayout}
             onMultiViewLayoutChange={onMultiViewLayoutChange}
+            currentLayout={currentLayout}
           />
         )}
       </Space>
