@@ -95,6 +95,31 @@ class MultiViewportService {
         type: ViewportType.VOLUME_3D,
         defaultOptions: {},
       },
+      // 添加对VIEW_TYPES常量的支持
+      AXIAL: {
+        type: ViewportType.STACK, // 使用STACK类型作为默认的2D视图
+        defaultOptions: {},
+      },
+      SAGITTAL: {
+        type: ViewportType.STACK, // 临时使用STACK，直到体积数据支持完善
+        defaultOptions: {},
+      },
+      CORONAL: {
+        type: ViewportType.STACK, // 临时使用STACK，直到体积数据支持完善
+        defaultOptions: {},
+      },
+      VR: {
+        type: ViewportType.VOLUME_3D,
+        defaultOptions: {},
+      },
+      MPR: {
+        type: ViewportType.STACK, // 临时使用STACK，直到MPR支持完善
+        defaultOptions: {},
+      },
+      STACK: {
+        type: ViewportType.STACK,
+        defaultOptions: {},
+      },
     };
 
     const config = viewportTypes[viewType] || viewportTypes.stack;
@@ -116,6 +141,17 @@ class MultiViewportService {
     try {
       // 清理现有视口
       await this.clearAllViewports();
+
+      // 验证所有视口配置的元素是否有效
+      for (const config of viewportConfigs) {
+        if (!config.element) {
+          throw new Error(`视口 ${config.viewportId} 的 DOM 元素为空`);
+        }
+        if (!document.contains(config.element)) {
+          throw new Error(`视口 ${config.viewportId} 的 DOM 元素未挂载到文档中`);
+        }
+        console.log(`验证视口 ${config.viewportId} 的元素:`, config.element);
+      }
 
       // 创建视口输入配置
       const viewportInputs = viewportConfigs.map((config) =>
@@ -251,20 +287,42 @@ class MultiViewportService {
     try {
       const { viewport } = viewportInfo;
 
+      // 确保图像索引在有效范围内
+      const validImageIndex = Math.max(0, Math.min(imageIndex, imageIds.length - 1));
+
       if (viewport.type === ViewportType.STACK) {
-        await viewport.setStack(imageIds, imageIndex);
+        // 对于堆栈视口，设置图像堆栈
+        await viewport.setStack(imageIds, validImageIndex);
+
+        // 设置初始图像
+        if (imageIds.length > 0) {
+          viewport.setImageIdIndex(validImageIndex);
+        }
+      } else if (viewport.type === ViewportType.ORTHOGRAPHIC) {
+        // 对于正交视口（MPR），需要设置体积数据
+        console.log(`正交视口 ${viewportId} 需要体积数据，当前使用堆栈模式`);
+        // 临时使用堆栈模式，直到体积数据准备好
+        await viewport.setStack?.(imageIds, validImageIndex);
       } else {
-        // 对于体积视口，需要不同的加载方式
-        console.warn(`视口类型 ${viewport.type} 的图像加载尚未实现`);
+        // 对于其他类型的视口
+        console.warn(`视口类型 ${viewport.type} 的图像加载方式需要特殊处理`);
+        // 尝试作为堆栈处理
+        if (viewport.setStack) {
+          await viewport.setStack(imageIds, validImageIndex);
+        }
       }
 
+      // 渲染视口
       viewport.render();
-      console.log(`视口 ${viewportId} 图像加载完成`);
+      console.log(`视口 ${viewportId} 图像加载完成，当前图像索引: ${validImageIndex}`);
 
-      // 图像加载完成后，激活工具（如果还没有激活的话）
+      // 图像加载完成后，确保工具组激活
       const toolGroupId = 'multiViewToolGroup';
       if (this.toolGroups[toolGroupId]) {
-        this.activateTools(toolGroupId);
+        // 延迟激活工具，确保视口完全准备好
+        setTimeout(() => {
+          this.activateTools(toolGroupId);
+        }, 100);
       }
     } catch (error) {
       console.error(`视口 ${viewportId} 图像加载失败:`, error);
@@ -274,16 +332,30 @@ class MultiViewportService {
 
   // 为所有视口加载相同的图像堆栈
   async loadImageStackToAllViewports(imageIds, imageIndex = 0) {
-    const loadPromises = Object.keys(this.viewports).map((viewportId) =>
-      this.loadImageStack(viewportId, imageIds, imageIndex)
-    );
-
-    try {
-      await Promise.allSettled(loadPromises);
-      console.log('所有视口图像加载完成');
-    } catch (error) {
-      console.error('部分视口图像加载失败:', error);
+    if (!imageIds || imageIds.length === 0) {
+      console.warn('没有提供图像ID');
+      return;
     }
+
+    const viewportIds = Object.keys(this.viewports);
+    if (viewportIds.length === 0) {
+      console.warn('没有可用的视口');
+      return;
+    }
+
+    console.log(`开始为 ${viewportIds.length} 个视口加载图像`);
+
+    // 串行加载，避免并发问题
+    for (const viewportId of viewportIds) {
+      try {
+        await this.loadImageStack(viewportId, imageIds, imageIndex);
+      } catch (error) {
+        console.error(`视口 ${viewportId} 图像加载失败:`, error);
+        // 继续加载其他视口，不中断整个过程
+      }
+    }
+
+    console.log('所有视口图像加载操作完成');
   }
 
   // 获取视口引用

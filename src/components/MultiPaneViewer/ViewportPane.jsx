@@ -33,6 +33,7 @@ const ViewportPane = forwardRef(
     const [isInitialized, setIsInitialized] = useState(false);
     const [error, setError] = useState(null);
     const isInitializingRef = useRef(false);
+    const imageLoadedRef = useRef(false);
 
     // 获取多视口服务实例（稳定化）
     const multiViewportService = useMemo(() => {
@@ -52,53 +53,47 @@ const ViewportPane = forwardRef(
     // 暴露viewport引用给父组件
     useImperativeHandle(ref, () => viewportRef.current, []);
 
-    // 稳定化的viewport引用回调
-    const handleViewportRef = useCallback(
-      (viewport) => {
-        if (onViewportRef) {
-          onViewportRef(viewport);
-        }
-      },
-      [onViewportRef]
-    );
-
-    // 当视图类型改变时重新初始化
+    // 初始化视口
     useEffect(() => {
-      if (isInitialized) {
-        // 直接调用清理逻辑，而不依赖cleanupViewport函数
-        const cleanup = async () => {
-          if (viewportRef.current) {
-            try {
-              await multiViewportService.disableViewport(viewportId);
-              handleViewportRef(null);
-              viewportRef.current = null;
-            } catch (error) {
-              console.warn(`清理视口 ${viewportId} 时出错:`, error);
-            }
-          }
-          setIsInitialized(false);
-          setError(null);
-          isInitializingRef.current = false;
-        };
-        cleanup();
-      }
-    }, [viewType, multiViewportService, viewportId, handleViewportRef]);
-
-    // 初始化viewport
-    useEffect(() => {
-      if (!containerRef.current || isInitialized || isInitializingRef.current) return;
+      if (!containerRef.current || isInitializingRef.current) return;
 
       const initializeViewport = async () => {
-        if (isInitializingRef.current) return; // 防止重复初始化
-
         try {
           isInitializingRef.current = true;
           setIsLoading(true);
           setError(null);
+          imageLoadedRef.current = false;
+
           console.log(`正在初始化 ${viewType} 视口，窗格 ${paneIndex}`);
 
           // 确保多视口服务已初始化
           await multiViewportService.initialize();
+
+          // 使用 requestAnimationFrame 确保DOM渲染完成
+          await new Promise((resolve) => {
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                resolve();
+              });
+            });
+          });
+
+          // 确保DOM元素存在且有效
+          if (!containerRef.current) {
+            // 如果100ms延迟后DOM仍未准备好，再等待一段时间
+            await new Promise((resolve) => setTimeout(resolve, 200));
+
+            if (!containerRef.current) {
+              throw new Error(`视口容器 DOM 元素未准备好`);
+            }
+          }
+
+          // 验证DOM元素是否已挂载到文档中
+          if (!document.contains(containerRef.current)) {
+            throw new Error(`视口容器 DOM 元素未挂载到文档中`);
+          }
+
+          console.log(`DOM 元素已准备好，容器:`, containerRef.current);
 
           // 创建视口配置
           const viewportConfig = {
@@ -117,10 +112,17 @@ const ViewportPane = forwardRef(
           }
 
           viewportRef.current = viewport;
-          handleViewportRef(viewport);
+          if (onViewportRef) {
+            onViewportRef(viewport);
+          }
           setIsInitialized(true);
 
           console.log(`视口 ${viewportId} 初始化完成`);
+
+          // 如果有图像数据，立即加载
+          if (images && images.length > 0 && !imageLoadedRef.current) {
+            await loadImageForViewport(images, imageIndex || 0);
+          }
         } catch (error) {
           console.error(`视口 ${viewportId} 初始化失败:`, error);
           setError(error.message);
@@ -133,56 +135,77 @@ const ViewportPane = forwardRef(
       initializeViewport();
 
       return () => {
-        // cleanup函数也要避免循环调用
+        // cleanup函数
         if (viewportRef.current) {
           multiViewportService.disableViewport(viewportId).catch(console.warn);
           viewportRef.current = null;
         }
+        if (onViewportRef) {
+          onViewportRef(null);
+        }
         isInitializingRef.current = false;
+        imageLoadedRef.current = false;
       };
-    }, [
-      paneIndex,
-      viewType,
-      viewportId,
-      multiViewportService,
-      handleViewportRef,
-      // 移除isInitialized依赖，避免循环
-    ]);
+    }, [paneIndex, viewType, viewportId, multiViewportService]);
+
+    // 图像加载函数
+    const loadImageForViewport = async (imageList, imgIndex) => {
+      if (!viewportRef.current || !imageList || imageList.length === 0 || imageLoadedRef.current) {
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        imageLoadedRef.current = true;
+
+        console.log(`更新视口 ${viewportId} 的图像，索引: ${imgIndex}`);
+
+        // 使用多视口服务加载图像堆栈
+        await multiViewportService.loadImageStack(viewportId, imageList, imgIndex || 0);
+
+        console.log(`视口 ${viewportId} 图像更新完成`);
+      } catch (error) {
+        console.error(`视口 ${viewportId} 图像更新失败:`, error);
+        setError(error.message);
+        imageLoadedRef.current = false;
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
     // 当图像数据改变时更新显示
     useEffect(() => {
-      if (!viewportRef.current || !images || images.length === 0 || !isInitialized) return;
+      if (!isInitialized) return;
 
-      const updateImage = async () => {
-        try {
-          setIsLoading(true);
-          console.log(`更新视口 ${viewportId} 的图像，索引: ${imageIndex}`);
+      // 重置图像加载状态，允许重新加载
+      imageLoadedRef.current = false;
 
-          // 使用多视口服务加载图像堆栈
-          await multiViewportService.loadImageStack(viewportId, images, imageIndex || 0);
-
-          console.log(`视口 ${viewportId} 图像更新完成`);
-        } catch (error) {
-          console.error(`视口 ${viewportId} 图像更新失败:`, error);
-          setError(error.message);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      updateImage();
-    }, [images, imageIndex, viewportId, multiViewportService, isInitialized]);
+      if (images && images.length > 0) {
+        loadImageForViewport(images, imageIndex || 0);
+      }
+    }, [images, imageIndex, isInitialized]);
 
     // 处理点击事件
-    const handleClick = (e) => {
-      e.stopPropagation();
-      onClick?.(paneIndex);
+    const handleClick = useCallback(
+      (e) => {
+        e.stopPropagation();
 
-      // 设置为活动视口
-      if (viewportRef.current) {
-        multiViewportService.setActiveViewport(viewportId);
-      }
-    };
+        // 只在窗格已初始化时才设置为活动窗格
+        if (isInitialized) {
+          onClick?.(paneIndex);
+
+          // 设置为活动视口
+          if (viewportRef.current) {
+            multiViewportService.setActiveViewport(viewportId);
+          }
+        } else {
+          // 未初始化的窗格被点击时，仍然可以设置为活动窗格，但不执行视口操作
+          console.log(`窗格 ${paneIndex + 1} 尚未初始化，仅设置为活动窗格`);
+          onClick?.(paneIndex);
+        }
+      },
+      [onClick, paneIndex, isInitialized, viewportRef, multiViewportService, viewportId]
+    );
 
     // 渲染错误状态
     const renderError = () => (
@@ -222,7 +245,7 @@ const ViewportPane = forwardRef(
           {!images || images.length === 0 ? (
             <div className={styles.placeholderSubtext}>暂无图像</div>
           ) : (
-            <div className={styles.placeholderSubtext}>准备就绪</div>
+            <div className={styles.placeholderSubtext}>正在加载...</div>
           )}
         </div>
       </div>

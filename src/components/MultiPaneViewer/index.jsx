@@ -103,13 +103,19 @@ const MultiPaneViewer = forwardRef(
           const newPaneViewTypes = getViewTypesForLayout(currentLayout, multiViewLayout);
 
           config.panes.forEach((pane, index) => {
-            // 为每个窗格分配图像，可以是同一图像或不同图像
+            // 为每个窗格分配图像
             if (images.length > 0) {
-              // 默认情况下，所有窗格显示当前选中的图像
-              // 后续可以扩展为每个窗格显示不同的图像
-              newPaneImages[index] = {
-                imageIndex: currentImageIndex < images.length ? currentImageIndex : 0,
-              };
+              // 确保第一个窗格优先显示当前图像
+              if (index === 0) {
+                newPaneImages[index] = {
+                  imageIndex: currentImageIndex < images.length ? currentImageIndex : 0,
+                };
+              } else {
+                // 其他窗格也显示同一图像，后续可以扩展为不同图像
+                newPaneImages[index] = {
+                  imageIndex: currentImageIndex < images.length ? currentImageIndex : 0,
+                };
+              }
             }
           });
 
@@ -123,6 +129,7 @@ const MultiPaneViewer = forwardRef(
           viewportRefs.current = {};
 
           console.log(`多视口布局切换到: ${currentLayout}，包含 ${config.panes.length} 个窗格`);
+          console.log('窗格图像分配:', newPaneImages);
         } catch (error) {
           console.error('设置布局失败:', error);
         } finally {
@@ -161,7 +168,7 @@ const MultiPaneViewer = forwardRef(
           } catch (error) {
             console.error('创建工具组失败:', error);
           }
-        }, 500);
+        }, 1000); // 增加延迟时间确保所有视口初始化完成
 
         return () => clearTimeout(timer);
       }
@@ -169,6 +176,7 @@ const MultiPaneViewer = forwardRef(
 
     // 处理窗格点击，设置为活动窗格
     const handlePaneClick = (paneIndex) => {
+      console.log(`窗格点击: ${paneIndex + 1}`);
       setActivePane(paneIndex);
     };
 
@@ -176,8 +184,10 @@ const MultiPaneViewer = forwardRef(
     const handleViewportRef = (paneIndex, viewport) => {
       if (viewport) {
         viewportRefs.current[paneIndex] = viewport;
+        console.log(`窗格 ${paneIndex + 1} 视口引用已设置`);
       } else {
         delete viewportRefs.current[paneIndex];
+        console.log(`窗格 ${paneIndex + 1} 视口引用已清理`);
       }
     };
 
@@ -209,7 +219,7 @@ const MultiPaneViewer = forwardRef(
 
               return (
                 <ViewportPane
-                  key={`${currentLayout}-${index}`}
+                  key={`${currentLayout}-${index}-${Date.now()}`} // 添加时间戳确保完全重新渲染
                   paneIndex={index}
                   isActive={activePane === index}
                   onClick={() => handlePaneClick(index)}
