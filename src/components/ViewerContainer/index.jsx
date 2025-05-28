@@ -6,9 +6,20 @@ import styles from './index.module.less';
 
 const ViewerContainer = forwardRef(
   (
-    { images, currentImageIndex, currentLayout = DEFAULT_LAYOUT, onLayoutChange, multiViewLayout },
+    {
+      images,
+      currentImageIndex,
+      currentLayout = DEFAULT_LAYOUT,
+      onLayoutChange,
+      multiViewLayout,
+      toolGroupRef,
+      activeTool,
+      onToolChange,
+    },
     ref
   ) => {
+    console.log('ViewerContainer 渲染 - 当前布局:', currentLayout);
+
     // 如果不是单窗格布局，使用MultiPaneViewer
     if (currentLayout !== '1x1') {
       return (
@@ -19,6 +30,9 @@ const ViewerContainer = forwardRef(
             layout={currentLayout}
             onLayoutChange={onLayoutChange}
             multiViewLayout={multiViewLayout}
+            toolGroupRef={toolGroupRef}
+            activeTool={activeTool}
+            onToolChange={onToolChange}
           />
         </div>
       );
@@ -80,6 +94,7 @@ const ViewerContainer = forwardRef(
               <div className={styles.imageStatus}>
                 <span className={styles.statusDot}></span>
                 当前图像: {currentImageIndex + 1} / {images.length}
+                <span className={styles.layoutIndicator}>| 布局: {currentLayout}</span>
               </div>
             </div>
           )}

@@ -27,6 +27,8 @@ const MainLayout = ({
   onShowSettings,
   multiViewLayout,
   onMultiViewLayoutChange,
+  currentLayout = DEFAULT_LAYOUT,
+  onLayoutChange,
 
   // SeriesPanel props
   images,
@@ -41,7 +43,6 @@ const MainLayout = ({
 }) => {
   const [isSeriesPanelCollapsed, setIsSeriesPanelCollapsed] = useState(false);
   const [isControlPanelCollapsed, setIsControlPanelCollapsed] = useState(true); // 默认隐藏
-  const [currentLayout, setCurrentLayout] = useState(DEFAULT_LAYOUT);
 
   // 响应式状态管理
   useEffect(() => {
@@ -83,8 +84,10 @@ const MainLayout = ({
   };
 
   const handleLayoutChange = (newLayout) => {
-    setCurrentLayout(newLayout);
-    console.log('布局已切换到:', newLayout);
+    console.log('MainLayout 布局变化:', newLayout);
+    if (onLayoutChange) {
+      onLayoutChange(newLayout);
+    }
   };
 
   return (
@@ -145,6 +148,9 @@ const MainLayout = ({
           currentLayout={currentLayout}
           onLayoutChange={handleLayoutChange}
           multiViewLayout={multiViewLayout}
+          toolGroupRef={toolGroupRef}
+          activeTool={activeTool}
+          onToolChange={onToolChange}
         />
 
         {/* 右侧操控区 */}

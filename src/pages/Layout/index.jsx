@@ -30,7 +30,6 @@ const { ViewportType } = Enums;
 
 // 定义常量
 const renderingEngineId = 'myRenderingEngine';
-const viewportId = 'CT_AXIAL_STACK';
 
 function Layout() {
   // 使用自定义hook获取状态和方法
@@ -68,13 +67,14 @@ function Layout() {
     clearAllImagesList,
   } = useDicomViewer();
 
-  // 本地状态（仅保留与Cornerstone实例相关的状态）
+  // 本地状态
   const [dicomTags, setDicomTags] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [currentLayout, setCurrentLayout] = useState('1x1');
   const timerRef = useRef(null);
   const viewerRef = useRef(null);
   const renderingEngineRef = useRef(null);
-  const viewportRef = useRef(null);
+  const viewportsRef = useRef({}); // 存储多个视口的引用
   const toolGroupRef = useRef(null);
 
   // 封装closeTagsModal以清空dicomTags
@@ -83,9 +83,10 @@ function Layout() {
     originalCloseTagsModal();
   };
 
+  // 初始化Cornerstone（只需要一次）
   useEffect(() => {
     let isInitializing = false;
-    async function init() {
+    async function initCornerstone() {
       if (isInitializing) return;
       isInitializing = true;
       try {
@@ -101,22 +102,6 @@ function Layout() {
         const renderingEngine = new RenderingEngine(renderingEngineId);
         renderingEngineRef.current = renderingEngine;
 
-        const element = viewerRef.current;
-
-        if (!element) {
-          console.error('视图元素不存在');
-          throw new Error('视图元素不存在');
-        }
-
-        const viewportInput = {
-          viewportId,
-          element,
-          type: ViewportType.STACK,
-        };
-
-        renderingEngine.enableElement(viewportInput);
-        viewportRef.current = renderingEngine.getViewport(viewportId);
-
         setIsInitialized(true);
         console.log('Cornerstone 初始化完成');
       } catch (error) {
@@ -127,7 +112,7 @@ function Layout() {
       }
     }
 
-    init();
+    initCornerstone();
 
     return () => {
       if (renderingEngineRef.current) {
@@ -137,13 +122,74 @@ function Layout() {
     };
   }, []);
 
+  // 当布局改变时，重新配置视口
   useEffect(() => {
-    if (isInitialized && images.length > 0) {
-      loadAndViewImage(images);
-    }
-  }, [isInitialized, images]);
+    if (!isInitialized || !renderingEngineRef.current) return;
 
-  const initializeTools = (viewportId) => {
+    const setupViewportsForLayout = async () => {
+      try {
+        console.log(`重新配置视口以适应布局: ${currentLayout}`);
+
+        // 清理现有视口
+        Object.keys(viewportsRef.current).forEach((viewportId) => {
+          try {
+            renderingEngineRef.current.disableElement(viewportId);
+          } catch (error) {
+            console.warn(`清理视口 ${viewportId} 时出错:`, error);
+          }
+        });
+        viewportsRef.current = {};
+
+        // 清理现有工具组
+        if (toolGroupRef.current) {
+          try {
+            ToolGroupManager.destroyToolGroup('myToolGroup');
+          } catch (error) {
+            console.warn('清理工具组时出错:', error);
+          }
+          toolGroupRef.current = null;
+        }
+
+        // 根据布局创建视口
+        if (currentLayout === '1x1') {
+          // 单窗格布局
+          const element = viewerRef.current;
+          if (element) {
+            const viewportId = 'CT_AXIAL_STACK';
+            const viewportInput = {
+              viewportId,
+              element,
+              type: ViewportType.STACK,
+            };
+
+            renderingEngineRef.current.enableElement(viewportInput);
+            viewportsRef.current[viewportId] = renderingEngineRef.current.getViewport(viewportId);
+
+            // 初始化工具
+            initializeTools([viewportId]);
+
+            // 如果有图像，加载它们
+            if (images.length > 0) {
+              await loadAndViewImage(images, viewportId);
+            }
+          }
+        } else {
+          // 多窗格布局 - 目前暂时跳过实际的Cornerstone初始化
+          // 等待MultiPaneViewer组件完善后再集成
+          console.log('多窗格布局将由MultiPaneViewer组件处理');
+          // TODO: 为MultiPaneViewer提供Cornerstone引擎实例
+        }
+
+        console.log(`视口配置完成，当前布局: ${currentLayout}`);
+      } catch (error) {
+        console.error('配置视口时出错:', error);
+      }
+    };
+
+    setupViewportsForLayout();
+  }, [currentLayout, isInitialized, images]);
+
+  const initializeTools = (viewportIds) => {
     const toolGroupId = 'myToolGroup';
     const toolGroup = ToolGroupManager.createToolGroup(toolGroupId);
     if (toolGroup) {
@@ -157,7 +203,10 @@ function Layout() {
       toolGroup.addTool(WindowLevelTool.toolName);
       toolGroup.addTool(StackScrollTool.toolName);
 
-      toolGroup.addViewport(viewportId);
+      // 为所有视口添加工具组
+      viewportIds.forEach((viewportId) => {
+        toolGroup.addViewport(viewportId);
+      });
 
       toolGroup.setToolActive(WindowLevelTool.toolName, {
         bindings: [
@@ -184,30 +233,36 @@ function Layout() {
     }
   };
 
-  const loadAndViewImage = async (imageIds) => {
-    if (imageIds && viewportRef.current) {
+  const loadAndViewImage = async (imageIds, viewportId = 'CT_AXIAL_STACK') => {
+    if (imageIds && viewportsRef.current[viewportId]) {
       try {
         console.log('开始加载图像:', imageIds);
-        await viewportRef.current.setStack(imageIds);
+        await viewportsRef.current[viewportId].setStack(imageIds);
         console.log('图像堆栈设置完成');
-        initializeTools(viewportId);
-        viewportRef.current.render();
+        viewportsRef.current[viewportId].render();
         console.log('图像渲染完成');
       } catch (error) {
         console.error('加载或显示图像时出错:', error);
       }
     } else {
-      console.log('imageId 或 viewportRef.current 不存在');
+      console.log('imageId 或 viewport 不存在');
     }
   };
 
   const handleImageSelect = (index) => {
-    selectImage(index, viewportRef.current);
+    // 为单窗格布局选择图像
+    if (currentLayout === '1x1') {
+      selectImage(index, viewportsRef.current['CT_AXIAL_STACK']);
+    } else {
+      // 多窗格布局的图像选择将由MultiPaneViewer处理
+      selectImage(index, null);
+    }
   };
 
   const handlePlayClip = useCallback(() => {
-    timerRef.current = playClip(viewportRef.current);
-  }, [playClip]);
+    const activeViewport = currentLayout === '1x1' ? viewportsRef.current['CT_AXIAL_STACK'] : null;
+    timerRef.current = playClip(activeViewport);
+  }, [playClip, currentLayout]);
 
   const handleStopClip = useCallback(() => {
     stopClip(timerRef);
@@ -255,58 +310,78 @@ function Layout() {
 
   // 工具栏事件处理函数
   const handleReset = () => {
-    if (viewportRef.current) {
-      resetImage(viewportRef.current);
+    const activeViewport = currentLayout === '1x1' ? viewportsRef.current['CT_AXIAL_STACK'] : null;
+    if (activeViewport) {
+      resetImage(activeViewport);
       resetViewerSettings();
     }
   };
 
   const handleFlipH = () => {
-    if (viewportRef.current) {
-      flipHorizontal(viewportRef.current);
+    const activeViewport = currentLayout === '1x1' ? viewportsRef.current['CT_AXIAL_STACK'] : null;
+    if (activeViewport) {
+      flipHorizontal(activeViewport);
     }
   };
 
   const handleFlipV = () => {
-    if (viewportRef.current) {
-      flipVertical(viewportRef.current);
+    const activeViewport = currentLayout === '1x1' ? viewportsRef.current['CT_AXIAL_STACK'] : null;
+    if (activeViewport) {
+      flipVertical(activeViewport);
     }
   };
 
   const handleRotate = (angle) => {
-    if (viewportRef.current) {
-      rotateImage(viewportRef.current, angle);
+    const activeViewport = currentLayout === '1x1' ? viewportsRef.current['CT_AXIAL_STACK'] : null;
+    if (activeViewport) {
+      rotateImage(activeViewport, angle);
     }
   };
 
   const handleInvert = () => {
-    if (viewportRef.current) {
-      invertImage(viewportRef.current);
+    const activeViewport = currentLayout === '1x1' ? viewportsRef.current['CT_AXIAL_STACK'] : null;
+    if (activeViewport) {
+      invertImage(activeViewport);
     }
   };
 
   const handleNextFrame = () => {
-    goToNextFrame(viewportRef.current);
+    const activeViewport = currentLayout === '1x1' ? viewportsRef.current['CT_AXIAL_STACK'] : null;
+    goToNextFrame(activeViewport);
   };
 
   const handlePrevFrame = () => {
-    goToPrevFrame(viewportRef.current);
+    const activeViewport = currentLayout === '1x1' ? viewportsRef.current['CT_AXIAL_STACK'] : null;
+    goToPrevFrame(activeViewport);
   };
 
   const handleDeleteCurrent = () => {
-    deleteCurrentImage(viewportRef.current);
+    const activeViewport = currentLayout === '1x1' ? viewportsRef.current['CT_AXIAL_STACK'] : null;
+    deleteCurrentImage(activeViewport);
   };
 
   const handleDeleteByIndex = (index) => {
-    deleteImageByIndex(index, viewportRef.current);
+    const activeViewport = currentLayout === '1x1' ? viewportsRef.current['CT_AXIAL_STACK'] : null;
+    deleteImageByIndex(index, activeViewport);
   };
 
   const handleClearAll = () => {
-    clearAllImagesList(viewportRef.current);
+    const activeViewport = currentLayout === '1x1' ? viewportsRef.current['CT_AXIAL_STACK'] : null;
+    clearAllImagesList(activeViewport);
   };
 
   const handleShowSettings = () => {
     message.info('设置功能将在后续版本中实现');
+  };
+
+  const handleLayoutChange = (newLayout) => {
+    console.log(`布局切换: ${currentLayout} -> ${newLayout}`);
+    setCurrentLayout(newLayout);
+
+    // 强制触发视口重新配置
+    setTimeout(() => {
+      console.log(`布局切换已完成，当前布局: ${newLayout}`);
+    }, 100);
   };
 
   return (
@@ -332,6 +407,8 @@ function Layout() {
         onShowSettings={handleShowSettings}
         multiViewLayout={multiViewLayout}
         onMultiViewLayoutChange={setMultiViewLayout}
+        currentLayout={currentLayout}
+        onLayoutChange={handleLayoutChange}
         // SeriesPanel props
         images={images}
         onImageSelect={handleImageSelect}
